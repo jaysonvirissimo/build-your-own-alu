@@ -28,11 +28,21 @@ export function createExerciseSection(exercise, index, registry, onSolved) {
 
   const editor = createEditor(editorContainer, exercise.skeleton);
 
-  // Run button
+  // Buttons
+  const buttonRow = document.createElement('div');
+  buttonRow.className = 'exercise-buttons';
+
   const runBtn = document.createElement('button');
   runBtn.className = 'run-btn';
   runBtn.textContent = 'Run';
-  section.appendChild(runBtn);
+  buttonRow.appendChild(runBtn);
+
+  const resetExBtn = document.createElement('button');
+  resetExBtn.className = 'reset-exercise-btn';
+  resetExBtn.textContent = 'Reset';
+  buttonRow.appendChild(resetExBtn);
+
+  section.appendChild(buttonRow);
 
   // Results area
   const resultsArea = document.createElement('div');
@@ -102,6 +112,13 @@ export function createExerciseSection(exercise, index, registry, onSolved) {
       registry.register(exercise.name, chipDef);
       onSolved(exercise.id, chipDef, code);
     }
+  });
+
+  resetExBtn.addEventListener('click', () => {
+    editor.setCode(exercise.skeleton);
+    resultsArea.innerHTML = '';
+    successIndicator.style.display = 'none';
+    saveExercise(exercise.id, '', false);
   });
 
   return { section, editor };

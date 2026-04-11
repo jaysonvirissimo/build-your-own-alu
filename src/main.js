@@ -2,7 +2,7 @@ import './style.css';
 import { ChipRegistry } from './hdl/chips.js';
 import { parseHDL } from './hdl/parser.js';
 import { EXERCISES } from './exercises/definitions.js';
-import { loadProgress, getHighestUnlocked } from './ui/progress.js';
+import { loadProgress, getHighestUnlocked, clearProgress } from './ui/progress.js';
 import { createExerciseSection } from './ui/exercise.js';
 
 const registry = new ChipRegistry();
@@ -15,6 +15,17 @@ header.innerHTML = `
   <h1>Build Your Own ALU</h1>
   <p>Implement every gate from NAND to ALU, one chip at a time.</p>
 `;
+const resetAllBtn = document.createElement('button');
+resetAllBtn.className = 'reset-btn';
+resetAllBtn.textContent = 'Reset All Progress';
+resetAllBtn.addEventListener('click', () => {
+  if (confirm('Reset all progress? Your solutions will be deleted.')) {
+    clearProgress();
+    location.reload();
+  }
+});
+header.appendChild(resetAllBtn);
+
 app.appendChild(header);
 
 const main = document.createElement('main');
