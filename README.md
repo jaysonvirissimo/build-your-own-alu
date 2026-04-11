@@ -17,29 +17,29 @@ An interactive web page where you implement every logic gate from NAND up throug
 
 ### Chapter 1 -- Boolean Logic
 
-- [ ] Not
-- [ ] And
-- [ ] Or
-- [ ] Xor
-- [ ] Mux
-- [ ] DMux
-- [ ] Not16
-- [ ] And16
-- [ ] Or16
-- [ ] Mux16
-- [ ] Or8Way
-- [ ] Mux4Way16
-- [ ] Mux8Way16
-- [ ] DMux4Way
-- [ ] DMux8Way
+- [x] Not
+- [x] And
+- [x] Or
+- [x] Xor
+- [x] Mux
+- [x] DMux
+- [ ] Not16 (needs bus support)
+- [ ] And16 (needs bus support)
+- [ ] Or16 (needs bus support)
+- [ ] Mux16 (needs bus support)
+- [ ] Or8Way (needs bus support)
+- [ ] Mux4Way16 (needs bus support)
+- [ ] Mux8Way16 (needs bus support)
+- [ ] DMux4Way (needs bus support)
+- [ ] DMux8Way (needs bus support)
 
 ### Chapter 2 -- Boolean Arithmetic
 
-- [ ] HalfAdder
-- [ ] FullAdder
-- [ ] Add16
-- [ ] Inc16
-- [ ] ALU
+- [x] HalfAdder
+- [x] FullAdder
+- [ ] Add16 (needs bus support)
+- [ ] Inc16 (needs bus support)
+- [ ] ALU (needs bus support + constants)
 
 ### Nice to Have
 
