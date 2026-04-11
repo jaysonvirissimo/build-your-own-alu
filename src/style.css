@@ -159,6 +159,60 @@ pre.error {
   margin: 0;
 }
 
+/* Circuit diagram */
+.circuit-diagram {
+  margin: 1em 0;
+  overflow-x: auto;
+}
+
+.circuit-diagram svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.gate-box {
+  fill: white;
+  stroke: #2aa198;
+  stroke-width: 2;
+}
+
+.wire {
+  stroke: #999;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.pin-dot {
+  fill: #2aa198;
+}
+
+.wire-label {
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 10px;
+  fill: #777;
+}
+
+.gate-label {
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 13px;
+  fill: #1a1a1a;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.pin-label {
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 12px;
+  fill: #1a1a1a;
+}
+
+.constant-label {
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 10px;
+  fill: #999;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   #app {

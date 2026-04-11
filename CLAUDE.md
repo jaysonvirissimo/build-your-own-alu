@@ -30,6 +30,9 @@ Three-stage pipeline: **parse → resolve → simulate**.
 - `editor.js` — CodeMirror 6 wrapper with a custom `StreamLanguage` for HDL keyword/comment highlighting. Returns `{getCode, setCode, setReadOnly}`.
 - `truth-table.js` — `renderSpecTable()` shows expected truth table before Run. `renderComparisonTable()` shows merged inputs/expected/yours columns with match/mismatch CSS classes.
 - `progress.js` — localStorage persistence under key `byoa-solutions`. Stores `{code, solved}` per exercise. `getHighestUnlocked()` returns the index of the first unsolved exercise for progressive disclosure.
+- `circuit-layout.js` — Pure function `computeLayout(chipDef, registry)` that topologically sorts parts into columns and produces a positioned node/edge graph. Collapses chips with >10 parts into a single box.
+- `circuit-render.js` — `renderCircuitSVG(layout)` converts the layout graph into an SVG DOM element using native `createElementNS`. L-shaped wire routing, gate boxes, pin dots, constant labels.
+- `circuit-diagram.js` — Thin orchestrator combining layout + render. Called from `exercise.js` after successful parse to show the circuit diagram above the truth table comparison.
 
 ### Data Flow
 

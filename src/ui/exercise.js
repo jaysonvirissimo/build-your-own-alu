@@ -3,6 +3,7 @@ import { renderSpecTable, renderComparisonTable, checkAllMatch } from './truth-t
 import { parseHDL } from '../hdl/parser.js';
 import { simulate } from '../hdl/simulator.js';
 import { saveExercise } from './progress.js';
+import { createCircuitDiagram } from './circuit-diagram.js';
 
 export function createExerciseSection(exercise, index, registry, onSolved) {
   const section = document.createElement('section');
@@ -69,6 +70,9 @@ export function createExerciseSection(exercise, index, registry, onSolved) {
       saveExercise(exercise.id, code, false);
       return;
     }
+
+    // Render circuit diagram
+    resultsArea.appendChild(createCircuitDiagram(chipDef, registry));
 
     // Run simulation for each truth table row
     const userOutputs = [];
