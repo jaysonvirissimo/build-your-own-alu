@@ -6,9 +6,9 @@ An interactive web page where you implement every logic gate from NAND up throug
 
 ### Infrastructure
 
-- [ ] Project setup (Vite, CodeMirror, package.json)
-- [ ] HDL parser
-- [ ] HDL simulator
+- [x] Project setup (Vite, package.json)
+- [x] HDL parser
+- [x] HDL simulator
 - [ ] Exercise UI (editor + truth table + run button)
 - [ ] Progressive disclosure (unlock next exercise on success)
 - [ ] localStorage persistence
