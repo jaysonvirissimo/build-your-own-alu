@@ -15,6 +15,23 @@ const TOKEN_TYPES = {
   EOF: 'EOF',
 };
 
+const TOKEN_DISPLAY = {
+  IDENT: 'an identifier',
+  NUMBER: 'a number',
+  LBRACE: "'{'",
+  RBRACE: "'}'",
+  LBRACKET: "'['",
+  RBRACKET: "']'",
+  LPAREN: "'('",
+  RPAREN: "')'",
+  COMMA: "','",
+  SEMICOLON: "';'",
+  EQUALS: "'='",
+  COLON: "':'",
+  DOTDOT: "'..'",
+  EOF: 'end of input',
+};
+
 function tokenize(source) {
   const tokens = [];
   let pos = 0;
@@ -148,7 +165,7 @@ function parse(tokens) {
     const tok = current();
     if (tok.type !== type) {
       throw new Error(
-        `Line ${tok.line}, col ${tok.col}: Expected ${type} ${contextMsg || ''}, got ${tok.type} ('${tok.value}')`
+        `Line ${tok.line}, col ${tok.col}: Expected ${TOKEN_DISPLAY[type]} ${contextMsg || ''}, got ${TOKEN_DISPLAY[tok.type]} '${tok.value}'`
       );
     }
     pos++;

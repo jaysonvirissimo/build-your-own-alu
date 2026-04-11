@@ -204,7 +204,7 @@ describe('parseHDL', () => {
   });
 
   it('throws on missing semicolon after pin list', () => {
-    expect(() => parseHDL('CHIP Foo { IN a OUT b; PARTS: }')).toThrow(/SEMICOLON/);
+    expect(() => parseHDL('CHIP Foo { IN a OUT b; PARTS: }')).toThrow(/';'/);
   });
 
   it('throws on missing closing brace', () => {
