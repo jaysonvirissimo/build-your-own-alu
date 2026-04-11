@@ -111,6 +111,20 @@ describe('simulate', () => {
     expect(() => simulate(def, { a: 0 }, registry)).toThrow(/Nand/);
   });
 
+  it('throws on circular dependency (self-referencing wire)', () => {
+    const registry = new ChipRegistry();
+    const def = parseHDL(`
+      CHIP Bad {
+        IN in;
+        OUT out;
+        PARTS:
+        Nand(a=out, b=in, out=out);
+      }
+    `);
+    expect(() => simulate(def, { in: 0 }, registry)).toThrow(/Could not resolve/);
+    expect(() => simulate(def, { in: 0 }, registry)).toThrow(/out/);
+  });
+
   it('throws on unresolved wire (typo)', () => {
     const registry = new ChipRegistry();
     const def = parseHDL(`
