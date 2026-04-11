@@ -20,11 +20,9 @@ Interactive web page where users implement Nand2Tetris HDL gates (NAND → ALU).
 
 Three-stage pipeline: **parse → resolve → simulate**.
 
-- `parser.js` — Hand-written recursive descent parser. Tokenizes HDL source, then parses into an AST: `{name, inputs: Pin[], outputs: Pin[], parts: Part[]}`. Each `Part` has `{chipName, connections: [{subPin, wire}]}` where `subPin` is the pin on the instantiated chip and `wire` is the name in the parent chip's scope.
+- `parser.js` — Hand-written recursive descent parser. Tokenizes HDL source, then parses into an AST: `{name, inputs: Pin[], outputs: Pin[], parts: Part[]}`. Each `Part` has `{chipName, connections: [{subPin, subBus, wire, wireBus, isConstant}]}`. Supports bus notation (`a[16]`), indexing (`a[3]`), slicing (`a[0..7]`), sub-pin indexing (`b[0]=true`), constants (`true`/`false`), and `//`/`/* */` comments.
 - `chips.js` — `ChipRegistry` manages available chips. Nand is the sole built-in (with an `evaluate()` function). User-solved chips are registered as raw ASTs and simulated recursively when used as sub-components.
-- `simulator.js` — Iterative signal propagation. Builds a wire map, then loops: simulate any part whose input wires are all defined, write its outputs to the wire map, repeat until all parts resolve or deadlock. Built-in chips short-circuit via `evaluate()`; user-defined chips recurse into `simulate()`.
-
-**Current limitation:** Only single-bit pins are supported. Bus notation (`a[16]`), bus slicing (`a[0..7]`), and constants (`true`/`false`) are not yet implemented — this blocks gates 7-20 (Not16 through ALU).
+- `simulator.js` — Iterative signal propagation with multi-bit bus support. Builds a wire map (values are JS numbers, supporting up to 32-bit buses), infers internal wire widths from sub-chip pin definitions, checks for bit-level driver conflicts, handles constants, and supports bit indexing/slicing for both reading and writing wires.
 
 ### UI Layer (`src/ui/`)
 
@@ -39,7 +37,7 @@ Three-stage pipeline: **parse → resolve → simulate**.
 
 ### Exercise Definitions (`src/exercises/definitions.js`)
 
-Array of exercise objects with `{id, name, chapter, inputs, outputs, skeleton, truthTable}`. Currently 8 exercises (Not through FullAdder). The skeleton is pre-filled HDL with an empty PARTS section.
+Array of 20 exercise objects with `{id, name, chapter, inputs, outputs, skeleton, truthTable}` covering all gates from Not through ALU. Single-bit exercises have full truth tables; multi-bit exercises use representative subsets with decimal integer values.
 
 ## Deployment
 

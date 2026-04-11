@@ -37,10 +37,10 @@ describe('EXERCISES definitions', () => {
         expect(exercise.skeleton).toContain(`CHIP ${exercise.name}`);
       });
 
-      it('has truth table values that are 0 or 1', () => {
+      it('has truth table values that are non-negative integers', () => {
         for (const row of exercise.truthTable) {
           for (const val of Object.values(row)) {
-            expect(val === 0 || val === 1).toBe(true);
+            expect(Number.isInteger(val) && val >= 0).toBe(true);
           }
         }
       });

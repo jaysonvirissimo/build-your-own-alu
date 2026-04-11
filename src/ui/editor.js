@@ -5,10 +5,16 @@ import { StreamLanguage } from '@codemirror/language';
 const hdlLanguage = StreamLanguage.define({
   token(stream) {
     if (stream.match(/\/\/.*/)) return 'comment';
+    if (stream.match('/*')) {
+      while (!stream.match('*/') && !stream.eol()) stream.next();
+      return 'comment';
+    }
     if (stream.match(/\b(CHIP|IN|OUT|PARTS)\b/)) return 'keyword';
     if (stream.match(/\b(true|false)\b/)) return 'atom';
     if (stream.match(/[a-zA-Z_][a-zA-Z0-9_]*/)) return 'variableName';
-    if (stream.match(/[{}(),;=:]/)) return 'punctuation';
+    if (stream.match(/\d+/)) return 'number';
+    if (stream.match(/\.\./)) return 'punctuation';
+    if (stream.match(/[{}(),;=:[\]]/)) return 'punctuation';
     stream.next();
     return null;
   },

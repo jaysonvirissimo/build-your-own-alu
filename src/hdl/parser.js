@@ -1,13 +1,17 @@
 const TOKEN_TYPES = {
   IDENT: 'IDENT',
+  NUMBER: 'NUMBER',
   LBRACE: 'LBRACE',
   RBRACE: 'RBRACE',
+  LBRACKET: 'LBRACKET',
+  RBRACKET: 'RBRACKET',
   LPAREN: 'LPAREN',
   RPAREN: 'RPAREN',
   COMMA: 'COMMA',
   SEMICOLON: 'SEMICOLON',
   EQUALS: 'EQUALS',
   COLON: 'COLON',
+  DOTDOT: 'DOTDOT',
   EOF: 'EOF',
 };
 
@@ -39,6 +43,45 @@ function tokenize(source) {
       continue;
     }
 
+    // Skip /* */ block comments
+    if (source[pos] === '/' && source[pos + 1] === '*') {
+      const startLine = line;
+      const startCol = col;
+      pos += 2;
+      col += 2;
+      while (pos < source.length) {
+        if (source[pos] === '*' && source[pos + 1] === '/') {
+          pos += 2;
+          col += 2;
+          break;
+        }
+        if (source[pos] === '\n') {
+          line++;
+          col = 1;
+        } else {
+          col++;
+        }
+        pos++;
+      }
+      if (pos >= source.length && !(source[pos - 2] === '*' && source[pos - 1] === '/')) {
+        throw new Error(`Line ${startLine}, col ${startCol}: Unterminated block comment`);
+      }
+      continue;
+    }
+
+    // Double-dot (..)
+    if (source[pos] === '.' && source[pos + 1] === '.') {
+      tokens.push({ type: TOKEN_TYPES.DOTDOT, value: '..', line, col });
+      pos += 2;
+      col += 2;
+      continue;
+    }
+
+    // Single dot is an error
+    if (source[pos] === '.' && source[pos + 1] !== '.') {
+      throw new Error(`Line ${line}, col ${col}: Unexpected character '.'. Did you mean '..'?`);
+    }
+
     const startLine = line;
     const startCol = col;
     const ch = source[pos];
@@ -46,6 +89,8 @@ function tokenize(source) {
     const single = {
       '{': TOKEN_TYPES.LBRACE,
       '}': TOKEN_TYPES.RBRACE,
+      '[': TOKEN_TYPES.LBRACKET,
+      ']': TOKEN_TYPES.RBRACKET,
       '(': TOKEN_TYPES.LPAREN,
       ')': TOKEN_TYPES.RPAREN,
       ',': TOKEN_TYPES.COMMA,
@@ -58,6 +103,18 @@ function tokenize(source) {
       tokens.push({ type: single[ch], value: ch, line: startLine, col: startCol });
       pos++;
       col++;
+      continue;
+    }
+
+    // Numeric literals
+    if (/[0-9]/.test(ch)) {
+      let value = '';
+      while (pos < source.length && /[0-9]/.test(source[pos])) {
+        value += source[pos];
+        pos++;
+        col++;
+      }
+      tokens.push({ type: TOKEN_TYPES.NUMBER, value, line: startLine, col: startCol });
       continue;
     }
 
@@ -109,15 +166,32 @@ function parse(tokens) {
     return tok;
   }
 
+  function parseBusNotation() {
+    if (current().type !== TOKEN_TYPES.LBRACKET) return null;
+    pos++; // skip [
+    const first = expect(TOKEN_TYPES.NUMBER, 'in bus notation');
+    if (current().type === TOKEN_TYPES.DOTDOT) {
+      pos++; // skip ..
+      const second = expect(TOKEN_TYPES.NUMBER, 'in bus range');
+      expect(TOKEN_TYPES.RBRACKET, 'after bus range');
+      return { start: parseInt(first.value), end: parseInt(second.value) };
+    }
+    expect(TOKEN_TYPES.RBRACKET, 'after bus index');
+    return { index: parseInt(first.value) };
+  }
+
   function parsePinList(keyword) {
     expectIdent(keyword);
     const pins = [];
-    // Parse comma-separated identifiers until semicolon
     if (current().type !== TOKEN_TYPES.SEMICOLON) {
-      pins.push({ name: expect(TOKEN_TYPES.IDENT, `in ${keyword} list`).value, width: 1 });
+      const name = expect(TOKEN_TYPES.IDENT, `in ${keyword} list`).value;
+      const bus = parseBusNotation();
+      pins.push({ name, width: bus ? bus.index || (bus.end - bus.start + 1) : 1 });
       while (current().type === TOKEN_TYPES.COMMA) {
         pos++; // skip comma
-        pins.push({ name: expect(TOKEN_TYPES.IDENT, `in ${keyword} list`).value, width: 1 });
+        const n = expect(TOKEN_TYPES.IDENT, `in ${keyword} list`).value;
+        const b = parseBusNotation();
+        pins.push({ name: n, width: b ? b.index || (b.end - b.start + 1) : 1 });
       }
     }
     expect(TOKEN_TYPES.SEMICOLON, `after ${keyword} list`);
@@ -126,9 +200,12 @@ function parse(tokens) {
 
   function parseConnection() {
     const subPin = expect(TOKEN_TYPES.IDENT, 'in connection').value;
+    const subBus = parseBusNotation();
     expect(TOKEN_TYPES.EQUALS, 'in connection');
     const wire = expect(TOKEN_TYPES.IDENT, 'in connection').value;
-    return { subPin, wire };
+    const isConstant = wire === 'true' || wire === 'false';
+    const wireBus = isConstant ? null : parseBusNotation();
+    return { subPin, subBus, wire, wireBus, isConstant };
   }
 
   function parsePartStatement() {

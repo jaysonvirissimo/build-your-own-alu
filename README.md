@@ -23,24 +23,25 @@ An interactive web page where you implement every logic gate from NAND up throug
 - [x] Xor
 - [x] Mux
 - [x] DMux
-- [ ] Not16 (needs bus support)
-- [ ] And16 (needs bus support)
-- [ ] Or16 (needs bus support)
-- [ ] Mux16 (needs bus support)
-- [ ] Or8Way (needs bus support)
-- [ ] Mux4Way16 (needs bus support)
-- [ ] Mux8Way16 (needs bus support)
-- [ ] DMux4Way (needs bus support)
-- [ ] DMux8Way (needs bus support)
+- [x] Not16
+- [x] And16
+- [x] Or16
+- [x] Mux16
+- [x] Or8Way
+- [x] Mux4Way16
+- [x] Mux8Way16
+- [x] DMux4Way
+- [x] DMux8Way
 
 ### Chapter 2 -- Boolean Arithmetic
 
 - [x] HalfAdder
 - [x] FullAdder
-- [ ] Add16 (needs bus support)
-- [ ] Inc16 (needs bus support)
-- [ ] ALU (needs bus support + constants)
+- [x] Add16
+- [x] Inc16
+- [x] ALU
 
 ### Nice to Have
 
 - [ ] Vim keybindings (via `@replit/codemirror-vim`)
+- [ ] Logic gate visualization (e.g., Elkjs for layout + SVG rendering)
