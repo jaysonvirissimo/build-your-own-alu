@@ -35,7 +35,16 @@ describe('computeLayout', () => {
     expect(gates[0].x).toBeGreaterThan(inputs[0].x);
     expect(outputs[0].x).toBeGreaterThan(gates[0].x);
 
-    expect(layout.edges.length).toBeGreaterThanOrEqual(2);
+    // Nand(a=in, b=in, out=out) should produce 3 edges:
+    // in->Nand pin a, in->Nand pin b, Nand->out
+    expect(layout.edges).toHaveLength(3);
+    const inputEdges = layout.edges.filter((e) => e.from === 'input:in');
+    expect(inputEdges).toHaveLength(2);
+    expect(inputEdges.map((e) => e.toPin).sort()).toEqual(['a', 'b']);
+
+    expect(gates[0].inputPins).toEqual(['a', 'b']);
+    expect(gates[0].outputPins).toEqual(['out']);
+
     expect(layout.viewBox.width).toBeGreaterThan(0);
     expect(layout.viewBox.height).toBeGreaterThan(0);
   });

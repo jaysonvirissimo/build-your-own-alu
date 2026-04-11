@@ -66,9 +66,9 @@ function expandedLayout(chipDef, registry) {
   const outputNames = new Set(chipDef.outputs.map((p) => p.name));
 
   // For each part, determine which wires it reads and writes
-  const partReads = []; // index -> Set<wireName>
-  const partWrites = []; // index -> Set<wireName>
-  const wireWriter = new Map(); // wireName -> partIndex (which part drives it)
+  const partReads = [];
+  const partWrites = [];
+  const wireWriter = new Map();
 
   for (let i = 0; i < chipDef.parts.length; i++) {
     const part = chipDef.parts[i];
@@ -101,7 +101,6 @@ function expandedLayout(chipDef, registry) {
 
   // Topological sort into columns
   const partColumn = new Array(chipDef.parts.length).fill(0);
-  // Iterate until stable
   let changed = true;
   while (changed) {
     changed = false;
@@ -128,9 +127,8 @@ function expandedLayout(chipDef, registry) {
 
   // Position nodes
   const nodes = [];
-  const partNodes = new Map(); // partIndex -> nodeId
+  const partNodes = new Map();
 
-  // Input pins (column -1)
   const inputCount = chipDef.inputs.length;
   chipDef.inputs.forEach((pin, i) => {
     nodes.push({
@@ -140,7 +138,7 @@ function expandedLayout(chipDef, registry) {
     });
   });
 
-  // Gate nodes
+  // Gate nodes — include pin lists for per-pin port positioning
   const maxRowCount = Math.max(inputCount, chipDef.outputs.length,
     ...columns.map((col) => col.length));
 
@@ -150,6 +148,7 @@ function expandedLayout(chipDef, registry) {
     for (let r = 0; r < col.length; r++) {
       const partIdx = col[r];
       const part = chipDef.parts[partIdx];
+      const subChip = registry.get(part.chipName);
       const x = PADDING + (c + 1) * COLUMN_WIDTH;
       const y = PADDING + (r + colOffset) * ROW_HEIGHT + (ROW_HEIGHT - GATE_HEIGHT) / 2;
       const nodeId = `part:${partIdx}`;
@@ -157,6 +156,8 @@ function expandedLayout(chipDef, registry) {
       nodes.push({
         id: nodeId, type: 'gate', label: part.chipName,
         x, y, w: GATE_WIDTH, h: GATE_HEIGHT,
+        inputPins: subChip.inputs.map((p) => p.name),
+        outputPins: subChip.outputs.map((p) => p.name),
         constants: part._constants,
       });
     }
@@ -173,9 +174,8 @@ function expandedLayout(chipDef, registry) {
     });
   });
 
-  // Build edges
+  // Build edges — one per connection, with pin info (no deduplication)
   const edges = [];
-  const edgesSeen = new Set();
 
   for (let i = 0; i < chipDef.parts.length; i++) {
     const part = chipDef.parts[i];
@@ -189,29 +189,39 @@ function expandedLayout(chipDef, registry) {
       const wireName = conn.wire;
 
       if (subInputs.has(conn.subPin)) {
-        // Wire feeding into this part — find source
         let fromId;
+        let fromPin = null;
         if (inputNames.has(wireName)) {
           fromId = `input:${wireName}`;
         } else if (wireWriter.has(wireName)) {
           fromId = partNodes.get(wireWriter.get(wireName));
+          // Find which output pin of the source part drives this wire
+          const srcPart = chipDef.parts[wireWriter.get(wireName)];
+          for (const srcConn of srcPart.connections) {
+            if (srcConn.wire === wireName && subOutputs.has(srcConn.subPin)) break;
+            const srcChip = registry.get(srcPart.chipName);
+            const srcOuts = new Set(srcChip.outputs.map((p) => p.name));
+            if (srcConn.wire === wireName && srcOuts.has(srcConn.subPin)) {
+              fromPin = srcConn.subPin;
+              break;
+            }
+          }
         }
         if (fromId) {
-          const key = `${fromId}->${partNodes.get(i)}:${wireName}`;
-          if (!edgesSeen.has(key)) {
-            edgesSeen.add(key);
-            edges.push({ from: fromId, to: partNodes.get(i), label: wireName });
-          }
+          edges.push({
+            from: fromId, to: partNodes.get(i),
+            toPin: conn.subPin, fromPin,
+            label: wireName,
+          });
         }
       }
 
       if (subOutputs.has(conn.subPin) && outputNames.has(wireName)) {
-        // Wire going to chip output
-        const key = `${partNodes.get(i)}->output:${wireName}`;
-        if (!edgesSeen.has(key)) {
-          edgesSeen.add(key);
-          edges.push({ from: partNodes.get(i), to: `output:${wireName}`, label: wireName });
-        }
+        edges.push({
+          from: partNodes.get(i), to: `output:${wireName}`,
+          fromPin: conn.subPin, toPin: null,
+          label: wireName,
+        });
       }
     }
   }
