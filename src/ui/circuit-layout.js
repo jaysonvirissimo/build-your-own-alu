@@ -101,13 +101,14 @@ function expandedLayout(chipDef, registry) {
 
   // Topological sort into columns
   const partColumn = new Array(chipDef.parts.length).fill(0);
-  let changed = true;
-  while (changed) {
-    changed = false;
+  const maxIterations = chipDef.parts.length + 1;
+  for (let iter = 0; iter < maxIterations; iter++) {
+    let changed = false;
     for (let i = 0; i < chipDef.parts.length; i++) {
       for (const wire of partReads[i]) {
         if (wireWriter.has(wire)) {
           const depIdx = wireWriter.get(wire);
+          if (depIdx === i) continue; // skip self-loops
           const newCol = partColumn[depIdx] + 1;
           if (newCol > partColumn[i]) {
             partColumn[i] = newCol;
@@ -116,6 +117,7 @@ function expandedLayout(chipDef, registry) {
         }
       }
     }
+    if (!changed) break;
   }
 
   // Group parts by column

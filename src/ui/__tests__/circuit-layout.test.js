@@ -164,4 +164,19 @@ describe('computeLayout', () => {
     // Not should still be after Nand despite being listed first
     expect(notNode.x).toBeGreaterThan(nandNode.x);
   });
+
+  it('does not hang on self-referencing wires', () => {
+    const registry = new ChipRegistry();
+    const def = parseHDL(`
+      CHIP Bad {
+        IN in;
+        OUT out;
+        PARTS:
+        Nand(a=out, b=in, out=out);
+      }
+    `);
+    // Should return a layout without hanging
+    const layout = computeLayout(def, registry);
+    expect(layout.nodes.filter((n) => n.type === 'gate')).toHaveLength(1);
+  });
 });
