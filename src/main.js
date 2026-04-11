@@ -61,9 +61,12 @@ function appendExercise(index) {
   exerciseSections[index] = { section, editor };
 }
 
-function handleSolved() {
-  const nextIndex = exerciseSections.length;
-  if (nextIndex < EXERCISES.length) {
+function handleSolved(exerciseId) {
+  // Find the index of the exercise that was just solved
+  const solvedIndex = EXERCISES.findIndex((e) => e.id === exerciseId);
+  const nextIndex = solvedIndex + 1;
+  // Only append the next exercise if it exists and isn't already rendered
+  if (nextIndex < EXERCISES.length && !exerciseSections[nextIndex]) {
     appendExercise(nextIndex);
     exerciseSections[nextIndex].section.scrollIntoView({ behavior: 'smooth' });
   }
