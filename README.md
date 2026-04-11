@@ -9,11 +9,11 @@ An interactive web page where you implement every logic gate from NAND up throug
 - [x] Project setup (Vite, package.json)
 - [x] HDL parser
 - [x] HDL simulator
-- [ ] Exercise UI (editor + truth table + run button)
-- [ ] Progressive disclosure (unlock next exercise on success)
-- [ ] localStorage persistence
-- [ ] Visual design and styling
-- [ ] GitHub Actions deployment
+- [x] Exercise UI (editor + truth table + run button)
+- [x] Progressive disclosure (unlock next exercise on success)
+- [x] localStorage persistence
+- [x] Visual design and styling
+- [x] GitHub Actions deployment
 
 ### Chapter 1 -- Boolean Logic
 
@@ -40,3 +40,7 @@ An interactive web page where you implement every logic gate from NAND up throug
 - [ ] Add16
 - [ ] Inc16
 - [ ] ALU
+
+### Nice to Have
+
+- [ ] Vim keybindings (via `@replit/codemirror-vim`)
