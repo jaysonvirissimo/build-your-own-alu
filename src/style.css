@@ -65,6 +65,22 @@ header p {
   line-height: 1.5;
 }
 
+.bool-ref-table {
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 0.9em;
+  margin: 0.5em 0;
+  border-spacing: 0 0.3em;
+}
+
+.bool-ref-table td:first-child {
+  padding-right: 1.5em;
+  white-space: nowrap;
+}
+
+.bool-ref-table td:last-child {
+  color: #555;
+}
+
 /* Exercise sections */
 .exercise {
   margin-bottom: 3em;
@@ -354,6 +370,62 @@ pre.error {
   font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
   font-size: 10px;
   fill: #999;
+}
+
+/* Tutorial variant */
+.exercise--tutorial {
+  background: #f0f8f6;
+  border: 1px solid #c8e0da;
+  border-radius: 6px;
+  padding: 1.5em;
+}
+
+.tutorial-badge {
+  display: inline-block;
+  background: #2aa198;
+  color: white;
+  font-size: 0.5em;
+  font-weight: bold;
+  padding: 0.15em 0.5em;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-left: 0.5em;
+  text-transform: uppercase;
+}
+
+.tutorial-lead-in {
+  color: #2aa198;
+  font-style: italic;
+}
+
+.walkthrough-btn {
+  background: none;
+  border: 1px solid #2aa198;
+  color: #2aa198;
+  padding: 0.5em 1.5em;
+  font-size: 0.9em;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.walkthrough-btn:hover:not(:disabled) {
+  background: #2aa198;
+  color: white;
+}
+
+.walkthrough-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tutorial-explanation {
+  background: #e8f5f3;
+  border-left: 3px solid #2aa198;
+  padding: 0.5em 0.8em;
+  margin: 0.5em 0;
+  color: #555;
+  line-height: 1.5;
 }
 
 /* Responsive */

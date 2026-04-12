@@ -23,6 +23,30 @@ export const EXERCISES = [
       'out = \u00ACin',
       'NAND(x, x) = \u00ACx \u2014 a NAND gate with both inputs tied together acts as NOT',
     ],
+    tutorial: true,
+    tutorialLeadIn: "This first exercise is a walkthrough. We\u2019ll build a chip together, step by step.",
+    tutorialSteps: [
+      {
+        code: `CHIP Not {
+    IN in;
+    OUT out;
+
+    PARTS:
+    // Your code here
+}`,
+        explanation: 'This is the skeleton for a Not gate. It takes one input (in) and produces one output (out). Your only building block is NAND \u2014 a gate that outputs 0 only when both inputs are 1.',
+      },
+      {
+        code: `CHIP Not {
+    IN in;
+    OUT out;
+
+    PARTS:
+    Nand(a=in, b=in, out=out);
+}`,
+        explanation: 'If you feed the same signal to both inputs of a NAND gate, it behaves exactly like NOT. When in=0, NAND(0,0)=1. When in=1, NAND(1,1)=0. That\u2019s inversion! Click Run to verify.',
+      },
+    ],
   },
   {
     id: 'and',

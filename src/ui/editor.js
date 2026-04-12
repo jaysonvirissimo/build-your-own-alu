@@ -60,9 +60,11 @@ function chipCompletions(registry) {
 
 export function createEditor(container, initialDoc, registry, vimEnabled) {
   const vimCompartment = new Compartment();
+  const readOnlyCompartment = new Compartment();
 
   const extensions = [
     vimCompartment.of(vimEnabled ? vim() : []),
+    readOnlyCompartment.of(EditorState.readOnly.of(false)),
     basicSetup,
     hdlLanguage,
     editorTheme,
@@ -89,7 +91,7 @@ export function createEditor(container, initialDoc, registry, vimEnabled) {
     },
     setReadOnly(readOnly) {
       view.dispatch({
-        effects: EditorState.readOnly.of(readOnly),
+        effects: readOnlyCompartment.reconfigure(EditorState.readOnly.of(readOnly)),
       });
     },
     toggleVim(enabled) {

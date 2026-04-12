@@ -4,6 +4,7 @@ import { parseHDL } from './hdl/parser.js';
 import { EXERCISES } from './exercises/definitions.js';
 import { loadProgress, getHighestUnlocked, clearProgress } from './ui/progress.js';
 import { createExerciseSection } from './ui/exercise.js';
+import { createTutorialSection } from './ui/tutorial.js';
 
 const registry = new ChipRegistry();
 const progress = loadProgress();
@@ -65,6 +66,22 @@ guide.innerHTML = `
 `;
 app.appendChild(guide);
 
+const boolRef = document.createElement('details');
+boolRef.className = 'hdl-guide';
+boolRef.innerHTML = `
+  <summary>Boolean notation reference</summary>
+  <table class="bool-ref-table">
+    <tr><td>\u00ACx</td><td>NOT \u2014 opposite of x</td></tr>
+    <tr><td>x \u2227 y</td><td>AND \u2014 1 only when both are 1</td></tr>
+    <tr><td>x \u2228 y</td><td>OR \u2014 1 when at least one is 1</td></tr>
+    <tr><td>x \u2295 y</td><td>XOR \u2014 1 when exactly one is 1</td></tr>
+  </table>
+  <p><strong>De Morgan\u2019s laws:</strong></p>
+  <p>\u00AC(x \u2227 y) = \u00ACx \u2228 \u00ACy<br>
+  \u00AC(x \u2228 y) = \u00ACx \u2227 \u00ACy</p>
+`;
+app.appendChild(boolRef);
+
 const main = document.createElement('main');
 app.appendChild(main);
 
@@ -93,7 +110,8 @@ function appendExercise(index) {
   const exercise = EXERCISES[index];
   const entry = progress.get(exercise.id);
 
-  const { section, editor } = createExerciseSection(
+  const builder = exercise.tutorial ? createTutorialSection : createExerciseSection;
+  const { section, editor } = builder(
     exercise,
     index,
     registry,
