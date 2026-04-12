@@ -14,7 +14,7 @@ const app = document.getElementById('app');
 const header = document.createElement('header');
 header.innerHTML = `
   <h1>Build Your Own ALU</h1>
-  <p>Implement every gate from NAND to ALU, one chip at a time.</p>
+  <p>Starting from a single logic gate called NAND, build increasingly complex chips until you have a complete Arithmetic Logic Unit (ALU) — the component at the heart of every CPU.</p>
 `;
 
 const vimToggle = document.createElement('button');
