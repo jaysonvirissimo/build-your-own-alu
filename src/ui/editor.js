@@ -1,6 +1,7 @@
 import { EditorView, basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { StreamLanguage } from '@codemirror/language';
+import { autocompletion } from '@codemirror/autocomplete';
 
 const hdlLanguage = StreamLanguage.define({
   token(stream) {
@@ -31,10 +32,40 @@ const editorTheme = EditorView.theme({
   },
 });
 
-export function createEditor(container, initialDoc) {
+function chipCompletions(registry) {
+  return (context) => {
+    const word = context.matchBefore(/[a-zA-Z_]\w*/);
+    if (!word && !context.explicit) return null;
+
+    const names = registry.getAvailableNames();
+    const options = names.map((name) => {
+      const chip = registry.get(name);
+      const allPins = [...chip.inputs, ...chip.outputs];
+      const pinTemplate = allPins.map((p) => `${p.name}=`).join(', ');
+      return {
+        label: name,
+        detail: ` (${allPins.map((p) => p.name).join(', ')})`,
+        apply: `${name}(${pinTemplate})`,
+        type: 'function',
+      };
+    });
+
+    return {
+      from: word ? word.from : context.pos,
+      options,
+    };
+  };
+}
+
+export function createEditor(container, initialDoc, registry) {
+  const extensions = [basicSetup, hdlLanguage, editorTheme];
+  if (registry) {
+    extensions.push(autocompletion({ override: [chipCompletions(registry)] }));
+  }
+
   const state = EditorState.create({
     doc: initialDoc,
-    extensions: [basicSetup, hdlLanguage, editorTheme],
+    extensions,
   });
   const view = new EditorView({ state, parent: container });
 

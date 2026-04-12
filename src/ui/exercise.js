@@ -26,7 +26,7 @@ export function createExerciseSection(exercise, index, registry, onSolved) {
   editorContainer.className = 'editor-container';
   section.appendChild(editorContainer);
 
-  const editor = createEditor(editorContainer, exercise.skeleton);
+  const editor = createEditor(editorContainer, exercise.skeleton, registry);
 
   // Buttons
   const buttonRow = document.createElement('div');
