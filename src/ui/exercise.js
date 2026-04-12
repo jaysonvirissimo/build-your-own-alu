@@ -15,6 +15,27 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
   heading.textContent = `${index + 1}. ${exercise.name}`;
   section.appendChild(heading);
 
+  // Description + analogy
+  if (exercise.description) {
+    const desc = document.createElement('p');
+    desc.className = 'exercise-description';
+    desc.textContent = exercise.description;
+    section.appendChild(desc);
+  }
+
+  if (exercise.analogy) {
+    const analogy = document.createElement('p');
+    analogy.className = 'exercise-analogy';
+    analogy.textContent = exercise.analogy;
+    section.appendChild(analogy);
+  }
+
+  // Available chips
+  const available = document.createElement('p');
+  available.className = 'available-chips';
+  available.textContent = 'Available chips: ' + registry.getAvailableNames().join(', ');
+  section.appendChild(available);
+
   // Spec table
   const specLabel = document.createElement('h3');
   specLabel.textContent = 'Truth Table';

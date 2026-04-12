@@ -4,6 +4,8 @@ export const EXERCISES = [
     id: 'not',
     name: 'Not',
     chapter: 1,
+    description: 'Outputs the opposite of its input.',
+    analogy: 'Like a light switch \u2014 flipping it reverses the state.',
     inputs: ['in'],
     outputs: ['out'],
     skeleton: `CHIP Not {
@@ -26,6 +28,8 @@ export const EXERCISES = [
     id: 'and',
     name: 'And',
     chapter: 1,
+    description: 'Outputs 1 only when both inputs are 1.',
+    analogy: 'Like a bank vault that requires two keys turned at the same time.',
     inputs: ['a', 'b'],
     outputs: ['out'],
     skeleton: `CHIP And {
@@ -50,6 +54,8 @@ export const EXERCISES = [
     id: 'or',
     name: 'Or',
     chapter: 1,
+    description: 'Outputs 1 when at least one input is 1.',
+    analogy: 'Like a room with two doors \u2014 you can enter through either one.',
     inputs: ['a', 'b'],
     outputs: ['out'],
     skeleton: `CHIP Or {
@@ -75,6 +81,8 @@ export const EXERCISES = [
     id: 'xor',
     name: 'Xor',
     chapter: 1,
+    description: 'Outputs 1 when exactly one input is 1, but not both.',
+    analogy: 'Like choosing soup or salad at a restaurant \u2014 you can have one, but not both.',
     inputs: ['a', 'b'],
     outputs: ['out'],
     skeleton: `CHIP Xor {
@@ -100,6 +108,8 @@ export const EXERCISES = [
     id: 'mux',
     name: 'Mux',
     chapter: 1,
+    description: 'Selects one of two inputs based on a selector bit.',
+    analogy: 'Like a TV remote\u2019s input button \u2014 choose between HDMI 1 or HDMI 2.',
     inputs: ['a', 'b', 'sel'],
     outputs: ['out'],
     skeleton: `CHIP Mux {
@@ -129,6 +139,8 @@ export const EXERCISES = [
     id: 'dmux',
     name: 'DMux',
     chapter: 1,
+    description: 'Routes a single input to one of two outputs based on a selector bit.',
+    analogy: 'Like a mail sorter \u2014 one incoming letter, routed to one of two mailboxes.',
     inputs: ['in', 'sel'],
     outputs: ['a', 'b'],
     skeleton: `CHIP DMux {
@@ -155,6 +167,8 @@ export const EXERCISES = [
     id: 'not16',
     name: 'Not16',
     chapter: 1,
+    description: 'Applies Not to each of the 16 bits independently.',
+    analogy: null,
     inputs: ['in'],
     outputs: ['out'],
     skeleton: `CHIP Not16 {
@@ -181,6 +195,8 @@ export const EXERCISES = [
     id: 'and16',
     name: 'And16',
     chapter: 1,
+    description: 'Applies And to each pair of bits independently.',
+    analogy: null,
     inputs: ['a', 'b'],
     outputs: ['out'],
     skeleton: `CHIP And16 {
@@ -207,6 +223,8 @@ export const EXERCISES = [
     id: 'or16',
     name: 'Or16',
     chapter: 1,
+    description: 'Applies Or to each pair of bits independently.',
+    analogy: null,
     inputs: ['a', 'b'],
     outputs: ['out'],
     skeleton: `CHIP Or16 {
@@ -232,6 +250,8 @@ export const EXERCISES = [
     id: 'mux16',
     name: 'Mux16',
     chapter: 1,
+    description: 'Selects one of two 16-bit inputs based on a selector bit.',
+    analogy: null,
     inputs: ['a', 'b', 'sel'],
     outputs: ['out'],
     skeleton: `CHIP Mux16 {
@@ -258,6 +278,8 @@ export const EXERCISES = [
     id: 'or8way',
     name: 'Or8Way',
     chapter: 1,
+    description: 'Outputs 1 if any of the 8 input bits is 1.',
+    analogy: 'Like a fire alarm system \u2014 if any sensor triggers, the alarm sounds.',
     inputs: ['in'],
     outputs: ['out'],
     skeleton: `CHIP Or8Way {
@@ -283,6 +305,8 @@ export const EXERCISES = [
     id: 'mux4way16',
     name: 'Mux4Way16',
     chapter: 1,
+    description: 'Selects one of four 16-bit inputs using a 2-bit selector.',
+    analogy: 'Like a 4-channel input selector.',
     inputs: ['a', 'b', 'c', 'd', 'sel'],
     outputs: ['out'],
     skeleton: `CHIP Mux4Way16 {
@@ -307,6 +331,8 @@ export const EXERCISES = [
     id: 'mux8way16',
     name: 'Mux8Way16',
     chapter: 1,
+    description: 'Selects one of eight 16-bit inputs using a 3-bit selector.',
+    analogy: 'Like an 8-channel input selector.',
     inputs: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'sel'],
     outputs: ['out'],
     skeleton: `CHIP Mux8Way16 {
@@ -331,6 +357,8 @@ export const EXERCISES = [
     id: 'dmux4way',
     name: 'DMux4Way',
     chapter: 1,
+    description: 'Routes a single input to one of four outputs using a 2-bit selector.',
+    analogy: 'Like a train switch with four tracks.',
     inputs: ['in', 'sel'],
     outputs: ['a', 'b', 'c', 'd'],
     skeleton: `CHIP DMux4Way {
@@ -359,6 +387,8 @@ export const EXERCISES = [
     id: 'dmux8way',
     name: 'DMux8Way',
     chapter: 1,
+    description: 'Routes a single input to one of eight outputs using a 3-bit selector.',
+    analogy: 'Like a post office sorting machine with eight bins.',
     inputs: ['in', 'sel'],
     outputs: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     skeleton: `CHIP DMux8Way {
@@ -389,6 +419,8 @@ export const EXERCISES = [
     id: 'half-adder',
     name: 'HalfAdder',
     chapter: 2,
+    description: 'Adds two single bits, producing a sum and a carry.',
+    analogy: 'Like adding two single-digit numbers and noting whether you carry.',
     inputs: ['a', 'b'],
     outputs: ['sum', 'carry'],
     skeleton: `CHIP HalfAdder {
@@ -413,6 +445,8 @@ export const EXERCISES = [
     id: 'full-adder',
     name: 'FullAdder',
     chapter: 2,
+    description: 'Adds two bits plus a carry-in, producing a sum and carry-out.',
+    analogy: 'Like adding a column of digits in long addition, including the carry from the previous column.',
     inputs: ['a', 'b', 'c'],
     outputs: ['sum', 'carry'],
     skeleton: `CHIP FullAdder {
@@ -442,6 +476,8 @@ export const EXERCISES = [
     id: 'add16',
     name: 'Add16',
     chapter: 2,
+    description: 'Adds two 16-bit numbers.',
+    analogy: 'Like stacking 16 FullAdders to do long addition in binary.',
     inputs: ['a', 'b'],
     outputs: ['out'],
     skeleton: `CHIP Add16 {
@@ -467,6 +503,8 @@ export const EXERCISES = [
     id: 'inc16',
     name: 'Inc16',
     chapter: 2,
+    description: 'Adds 1 to a 16-bit number.',
+    analogy: 'Like an odometer clicking forward by one.',
     inputs: ['in'],
     outputs: ['out'],
     skeleton: `CHIP Inc16 {
@@ -492,6 +530,8 @@ export const EXERCISES = [
     id: 'alu',
     name: 'ALU',
     chapter: 2,
+    description: 'Performs one of several arithmetic or logical operations based on 6 control bits.',
+    analogy: 'Like a calculator\u2019s brain \u2014 one chip that can add, subtract, negate, or compare depending on which buttons are pressed.',
     inputs: ['x', 'y', 'zx', 'nx', 'zy', 'ny', 'f', 'no'],
     outputs: ['out', 'zr', 'ng'],
     skeleton: `CHIP ALU {

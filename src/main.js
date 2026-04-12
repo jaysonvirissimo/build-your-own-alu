@@ -43,6 +43,27 @@ header.appendChild(resetAllBtn);
 
 app.appendChild(header);
 
+const guide = document.createElement('details');
+guide.className = 'hdl-guide';
+guide.innerHTML = `
+  <summary>How to write HDL</summary>
+  <p>Each chip is defined with a name, inputs, outputs, and a list of parts that wire together:</p>
+  <pre><code>CHIP And {
+    IN a, b;
+    OUT out;
+
+    PARTS:
+    Nand(a=a, b=b, out=nandOut);
+    Nand(a=nandOut, b=nandOut, out=out);
+}</code></pre>
+  <p>Each line in <strong>PARTS</strong> places a chip and connects its pins to wires.
+  The left side of <code>=</code> is the pin on the chip you're placing.
+  The right side is the wire name in your design.
+  Any name that isn't an input or output becomes an internal wire.</p>
+  <p>Start typing a chip name and autocomplete will show available chips with their pins.</p>
+`;
+app.appendChild(guide);
+
 const main = document.createElement('main');
 app.appendChild(main);
 
