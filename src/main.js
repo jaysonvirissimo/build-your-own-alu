@@ -14,7 +14,7 @@ const app = document.getElementById('app');
 const header = document.createElement('header');
 header.innerHTML = `
   <h1>Build Your Own ALU</h1>
-  <p>Starting from a single logic gate called NAND, build increasingly complex chips until you have a complete Arithmetic Logic Unit (ALU) — the component at the heart of every CPU.</p>
+  <p>Write chips in HDL (Hardware Description Language) — a simple text format for wiring logic gates together. Starting from a single gate called NAND, build increasingly complex chips until you have a complete Arithmetic Logic Unit (ALU) — the component at the heart of every CPU.</p>
 `;
 
 const vimToggle = document.createElement('button');
@@ -61,6 +61,7 @@ guide.innerHTML = `
   The right side is the wire name in your design.
   Any name that isn't an input or output becomes an internal wire.</p>
   <p>Start typing a chip name and autocomplete will show available chips with their pins.</p>
+  <p>This HDL is from the <a href="https://www.nand2tetris.org/" target="_blank" rel="noopener">Nand2Tetris</a> course by Noam Nisan and Shimon Schocken. The exercises here cover the first two chapters of the book.</p>
 `;
 app.appendChild(guide);
 
