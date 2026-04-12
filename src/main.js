@@ -7,6 +7,7 @@ import { createExerciseSection } from './ui/exercise.js';
 
 const registry = new ChipRegistry();
 const progress = loadProgress();
+let vimEnabled = localStorage.getItem('byoa-vim-enabled') === 'true';
 const app = document.getElementById('app');
 
 // Header
@@ -15,6 +16,20 @@ header.innerHTML = `
   <h1>Build Your Own ALU</h1>
   <p>Implement every gate from NAND to ALU, one chip at a time.</p>
 `;
+
+const vimToggle = document.createElement('button');
+vimToggle.className = 'vim-toggle';
+vimToggle.textContent = vimEnabled ? 'Vim: ON' : 'Vim: OFF';
+vimToggle.addEventListener('click', () => {
+  vimEnabled = !vimEnabled;
+  localStorage.setItem('byoa-vim-enabled', vimEnabled);
+  vimToggle.textContent = vimEnabled ? 'Vim: ON' : 'Vim: OFF';
+  for (const entry of exerciseSections) {
+    if (entry) entry.editor.toggleVim(vimEnabled);
+  }
+});
+header.appendChild(vimToggle);
+
 const resetAllBtn = document.createElement('button');
 resetAllBtn.className = 'reset-btn';
 resetAllBtn.textContent = 'Reset All Progress';
@@ -60,7 +75,8 @@ function appendExercise(index) {
     exercise,
     index,
     registry,
-    handleSolved
+    handleSolved,
+    vimEnabled
   );
 
   // Restore saved code

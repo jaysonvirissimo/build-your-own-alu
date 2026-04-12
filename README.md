@@ -43,5 +43,5 @@ An interactive web page where you implement every logic gate from NAND up throug
 
 ### Nice to Have
 
-- [ ] Vim keybindings (via `@replit/codemirror-vim`)
+- [x] Vim keybindings (via `@replit/codemirror-vim`, global toggle, persisted)
 - [x] Logic gate visualization (native SVG, topological column layout)

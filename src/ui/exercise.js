@@ -5,7 +5,7 @@ import { simulate } from '../hdl/simulator.js';
 import { saveExercise } from './progress.js';
 import { createCircuitDiagram } from './circuit-diagram.js';
 
-export function createExerciseSection(exercise, index, registry, onSolved) {
+export function createExerciseSection(exercise, index, registry, onSolved, vimEnabled) {
   const section = document.createElement('section');
   section.className = 'exercise';
   section.id = `exercise-${exercise.id}`;
@@ -26,7 +26,7 @@ export function createExerciseSection(exercise, index, registry, onSolved) {
   editorContainer.className = 'editor-container';
   section.appendChild(editorContainer);
 
-  const editor = createEditor(editorContainer, exercise.skeleton, registry);
+  const editor = createEditor(editorContainer, exercise.skeleton, registry, vimEnabled);
 
   // Buttons
   const buttonRow = document.createElement('div');
