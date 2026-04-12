@@ -17,6 +17,10 @@ export const EXERCISES = [
       { in: 0, out: 1 },
       { in: 1, out: 0 },
     ],
+    hints: [
+      'out = \u00ACin',
+      'NAND(x, x) = \u00ACx \u2014 a NAND gate with both inputs tied together acts as NOT',
+    ],
   },
   {
     id: 'and',
@@ -36,6 +40,10 @@ export const EXERCISES = [
       { a: 0, b: 1, out: 0 },
       { a: 1, b: 0, out: 0 },
       { a: 1, b: 1, out: 1 },
+    ],
+    hints: [
+      'out = a \u2227 b',
+      'a \u2227 b = \u00AC(a NAND b) \u2014 negate the NAND of a and b',
     ],
   },
   {
@@ -57,6 +65,11 @@ export const EXERCISES = [
       { a: 1, b: 0, out: 1 },
       { a: 1, b: 1, out: 1 },
     ],
+    hints: [
+      'out = a \u2228 b',
+      'By De Morgan\u2019s law: a \u2228 b = \u00AC(\u00ACa \u2227 \u00ACb)',
+      'a \u2228 b = NAND(\u00ACa, \u00ACb) \u2014 negate each input, then NAND them',
+    ],
   },
   {
     id: 'xor',
@@ -76,6 +89,11 @@ export const EXERCISES = [
       { a: 0, b: 1, out: 1 },
       { a: 1, b: 0, out: 1 },
       { a: 1, b: 1, out: 0 },
+    ],
+    hints: [
+      'out = a \u2295 b',
+      'a \u2295 b = (a \u2227 \u00ACb) \u2228 (\u00ACa \u2227 b)',
+      'You can build this from And, Or, and Not gates',
     ],
   },
   {
@@ -101,6 +119,11 @@ export const EXERCISES = [
       { a: 1, b: 1, sel: 0, out: 1 },
       { a: 1, b: 1, sel: 1, out: 1 },
     ],
+    hints: [
+      'When sel = 0, out = a. When sel = 1, out = b.',
+      'out = (a \u2227 \u00ACsel) \u2228 (b \u2227 sel)',
+      'Use And, Or, and Not to implement this expression',
+    ],
   },
   {
     id: 'dmux',
@@ -120,6 +143,10 @@ export const EXERCISES = [
       { in: 0, sel: 1, a: 0, b: 0 },
       { in: 1, sel: 0, a: 1, b: 0 },
       { in: 1, sel: 1, a: 0, b: 1 },
+    ],
+    hints: [
+      'a = in \u2227 \u00ACsel, b = in \u2227 sel',
+      'Use And and Not gates for each output',
     ],
   },
 
@@ -145,6 +172,10 @@ export const EXERCISES = [
       { in: 0x00FF, out: 0xFF00 },
       { in: 0x1234, out: 0xEDCB },
     ],
+    hints: [
+      'Apply the single-bit operation to each bit independently',
+      'out[i] = \u00ACin[i] for each bit i from 0 to 15',
+    ],
   },
   {
     id: 'and16',
@@ -167,6 +198,10 @@ export const EXERCISES = [
       { a: 0xFF00, b: 0x0F0F, out: 0x0F00 },
       { a: 0x1234, b: 0x5678, out: 0x1230 },
     ],
+    hints: [
+      'Apply the single-bit operation to each pair of bits independently',
+      'out[i] = a[i] \u2227 b[i] for each bit i from 0 to 15',
+    ],
   },
   {
     id: 'or16',
@@ -187,6 +222,10 @@ export const EXERCISES = [
       { a: 0xAAAA, b: 0x5555, out: 0xFFFF },
       { a: 0xFF00, b: 0x0F0F, out: 0xFF0F },
       { a: 0x1234, b: 0x5678, out: 0x567C },
+    ],
+    hints: [
+      'Apply the single-bit operation to each pair of bits independently',
+      'out[i] = a[i] \u2228 b[i] for each bit i from 0 to 15',
     ],
   },
   {
@@ -210,6 +249,10 @@ export const EXERCISES = [
       { a: 0x1234, b: 0x5678, sel: 0, out: 0x1234 },
       { a: 0x1234, b: 0x5678, sel: 1, out: 0x5678 },
     ],
+    hints: [
+      'Apply the single-bit Mux to each bit independently',
+      'out[i] = Mux(a[i], b[i], sel) for each bit i from 0 to 15',
+    ],
   },
   {
     id: 'or8way',
@@ -231,6 +274,10 @@ export const EXERCISES = [
       { in: 0x80, out: 1 },
       { in: 0x10, out: 1 },
     ],
+    hints: [
+      'out = in[0] \u2228 in[1] \u2228 ... \u2228 in[7]',
+      'Build a tree: OR pairs together, then OR the results',
+    ],
   },
   {
     id: 'mux4way16',
@@ -251,6 +298,10 @@ export const EXERCISES = [
       { a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 2, out: 0x3333 },
       { a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 3, out: 0x4444 },
     ],
+    hints: [
+      'sel has 2 bits. Use sel[0] to choose within pairs, sel[1] to choose between pairs.',
+      'First Mux16 a,b and c,d using sel[0], then Mux16 the two results using sel[1]',
+    ],
   },
   {
     id: 'mux8way16',
@@ -270,6 +321,10 @@ export const EXERCISES = [
       { a: 0x0001, b: 0x0002, c: 0x0003, d: 0x0004, e: 0x0005, f: 0x0006, g: 0x0007, h: 0x0008, sel: 1, out: 0x0002 },
       { a: 0x0001, b: 0x0002, c: 0x0003, d: 0x0004, e: 0x0005, f: 0x0006, g: 0x0007, h: 0x0008, sel: 3, out: 0x0004 },
       { a: 0x0001, b: 0x0002, c: 0x0003, d: 0x0004, e: 0x0005, f: 0x0006, g: 0x0007, h: 0x0008, sel: 7, out: 0x0008 },
+    ],
+    hints: [
+      'sel has 3 bits. Extend the Mux4Way16 pattern with one more stage.',
+      'Use two Mux4Way16 gates for groups of 4, then a Mux16 to choose between them using sel[2]',
     ],
   },
   {
@@ -295,6 +350,10 @@ export const EXERCISES = [
       { in: 1, sel: 2, a: 0, b: 0, c: 1, d: 0 },
       { in: 1, sel: 3, a: 0, b: 0, c: 0, d: 1 },
     ],
+    hints: [
+      'sel has 2 bits. Demux in two stages.',
+      'First DMux by sel[1] into two groups, then DMux each group by sel[0]',
+    ],
   },
   {
     id: 'dmux8way',
@@ -319,6 +378,10 @@ export const EXERCISES = [
       { in: 1, sel: 6, a: 0, b: 0, c: 0, d: 0, e: 0, f: 0, g: 1, h: 0 },
       { in: 1, sel: 7, a: 0, b: 0, c: 0, d: 0, e: 0, f: 0, g: 0, h: 1 },
     ],
+    hints: [
+      'sel has 3 bits. Extend the DMux4Way pattern with one more stage.',
+      'First DMux by sel[2], then DMux4Way each result using sel[0..1]',
+    ],
   },
 
   // Chapter 2 — Boolean Arithmetic
@@ -340,6 +403,10 @@ export const EXERCISES = [
       { a: 0, b: 1, sum: 1, carry: 0 },
       { a: 1, b: 0, sum: 1, carry: 0 },
       { a: 1, b: 1, sum: 0, carry: 1 },
+    ],
+    hints: [
+      'sum = a \u2295 b, carry = a \u2227 b',
+      'XOR gives the sum bit, AND gives the carry bit',
     ],
   },
   {
@@ -365,6 +432,11 @@ export const EXERCISES = [
       { a: 1, b: 1, c: 0, sum: 0, carry: 1 },
       { a: 1, b: 1, c: 1, sum: 1, carry: 1 },
     ],
+    hints: [
+      'sum = a \u2295 b \u2295 c',
+      'Use two HalfAdders: first add a and b, then add that sum with c',
+      'carry = carry\u2081 \u2228 carry\u2082 \u2014 OR the two carry outputs together',
+    ],
   },
   {
     id: 'add16',
@@ -386,6 +458,10 @@ export const EXERCISES = [
       { a: 0x00FF, b: 0xFF00, out: 0xFFFF },
       { a: 0x1234, b: 0x5678, out: 0x68AC },
     ],
+    hints: [
+      'Chain adders: HalfAdder for bit 0, FullAdder for bits 1\u201315',
+      'Connect each carry output to the next FullAdder\u2019s carry input',
+    ],
   },
   {
     id: 'inc16',
@@ -406,6 +482,10 @@ export const EXERCISES = [
       { in: 0xFFFF, out: 0x0000 },
       { in: 0x00FF, out: 0x0100 },
       { in: 0x7FFF, out: 0x8000 },
+    ],
+    hints: [
+      'Incrementing is the same as adding 1',
+      'Use a HalfAdder for bit 0 with b=true, then FullAdders for bits 1\u201315 with b=false',
     ],
   },
   {
@@ -446,6 +526,12 @@ export const EXERCISES = [
       { x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 0, ny: 0, f: 0, no: 0, out: 0x0001, zr: 0, ng: 0 },
       // x|y
       { x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 1, f: 0, no: 1, out: 0x0013, zr: 0, ng: 0 },
+    ],
+    hints: [
+      'Process x and y independently: first zero (zx/zy), then negate (nx/ny)',
+      'Use Mux16 to select: if zx then 0 else x. Then if nx, negate the result.',
+      'f selects Add16 (f=1) or And16 (f=0). Then if no, negate the output.',
+      'zr = 1 when out = 0 (use Or8Way on both halves). ng = out[15] (the sign bit).',
     ],
   },
 ];

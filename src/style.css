@@ -110,6 +110,40 @@ header p {
   color: #c00;
 }
 
+.hint-btn {
+  background: none;
+  border: 1px solid #ccc;
+  color: #888;
+  padding: 0.5em 1.5em;
+  font-size: 0.9em;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.hint-btn:hover:not(:disabled) {
+  border-color: #e8a317;
+  color: #e8a317;
+}
+
+.hint-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.hint-area {
+  margin: 0.5em 0;
+}
+
+.hint {
+  background: #fdf8e8;
+  border-left: 3px solid #e8a317;
+  padding: 0.5em 0.8em;
+  margin: 0.3em 0;
+  font-size: 0.95em;
+  color: #555;
+}
+
 .vim-toggle {
   float: right;
   margin-right: 0.5em;

@@ -42,7 +42,36 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
   resetExBtn.textContent = 'Reset';
   buttonRow.appendChild(resetExBtn);
 
+  // Hint button
+  let hintIndex = 0;
+  const hasHints = exercise.hints && exercise.hints.length > 0;
+
+  const hintBtn = document.createElement('button');
+  hintBtn.className = 'hint-btn';
+  hintBtn.textContent = 'Hint';
+  if (!hasHints) hintBtn.style.display = 'none';
+  buttonRow.appendChild(hintBtn);
+
   section.appendChild(buttonRow);
+
+  // Hint area
+  const hintArea = document.createElement('div');
+  hintArea.className = 'hint-area';
+  section.appendChild(hintArea);
+
+  hintBtn.addEventListener('click', () => {
+    if (hintIndex < exercise.hints.length) {
+      const hint = document.createElement('div');
+      hint.className = 'hint';
+      hint.textContent = exercise.hints[hintIndex];
+      hintArea.appendChild(hint);
+      hintIndex++;
+    }
+    if (hintIndex >= exercise.hints.length) {
+      hintBtn.disabled = true;
+      hintBtn.textContent = 'No more hints';
+    }
+  });
 
   // Results area
   const resultsArea = document.createElement('div');
@@ -118,6 +147,12 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
     editor.setCode(exercise.skeleton);
     resultsArea.innerHTML = '';
     successIndicator.style.display = 'none';
+    hintArea.innerHTML = '';
+    hintIndex = 0;
+    if (hasHints) {
+      hintBtn.disabled = false;
+      hintBtn.textContent = 'Hint';
+    }
     saveExercise(exercise.id, '', false);
   });
 
