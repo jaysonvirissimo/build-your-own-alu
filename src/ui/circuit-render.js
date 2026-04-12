@@ -61,6 +61,8 @@ export function renderCircuitSVG(layout) {
   const nodeMap = new Map(layout.nodes.map((n) => [n.id, n]));
 
   // Render edges first (behind nodes)
+  const labeledWires = new Set();
+
   for (const edge of layout.edges) {
     const fromNode = nodeMap.get(edge.from);
     const toNode = nodeMap.get(edge.to);
@@ -76,9 +78,10 @@ export function renderCircuitSVG(layout) {
     });
     svg.appendChild(path);
 
-    if (edge.label) {
-      const labelX = midX;
-      const labelY = y1 === y2 ? y1 - 8 : (y1 + y2) / 2 - 8;
+    if (edge.label && !labeledWires.has(edge.label)) {
+      labeledWires.add(edge.label);
+      const labelX = y1 === y2 ? (x1 + x2) / 2 : (x1 + midX) / 2;
+      const labelY = y1 - 12;
       const text = svgEl('text', {
         x: labelX, y: labelY,
         class: 'wire-label',

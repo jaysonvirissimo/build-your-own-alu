@@ -247,6 +247,9 @@ pre.error {
   font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
   font-size: 10px;
   fill: #777;
+  paint-order: stroke;
+  stroke: #fafafa;
+  stroke-width: 3px;
 }
 
 .gate-label {
