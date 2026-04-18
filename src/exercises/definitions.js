@@ -398,10 +398,10 @@ Not(in=in[15], out=out[15]);</code></pre>
     // Your code here
 }`,
     truthTable: [
-      { a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 0, out: 0x1111 },
-      { a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 1, out: 0x2222 },
-      { a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 2, out: 0x3333 },
-      { a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 3, out: 0x4444 },
+      { label: 'sel=0 \u2192 a', a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 0, out: 0x1111 },
+      { label: 'sel=1 \u2192 b', a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 1, out: 0x2222 },
+      { label: 'sel=2 \u2192 c', a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 2, out: 0x3333 },
+      { label: 'sel=3 \u2192 d', a: 0x1111, b: 0x2222, c: 0x3333, d: 0x4444, sel: 3, out: 0x4444 },
     ],
     hints: [
       'sel has 2 bits. Use sel[0] to choose within pairs, sel[1] to choose between pairs.',
@@ -654,7 +654,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     id: 'alu-core',
     name: 'ALUCompute',
     chapter: 2,
-    description: 'The arithmetic/logic heart of the ALU: computes x+y when f=1, or x&y when f=0.',
+    description: 'The arithmetic/logic heart of the ALU: computes x+y when f=1, or x\u2227y when f=0.',
     analogy: 'Like a calculator\u2019s mode switch \u2014 one button flips the same two inputs between \u201Cadd\u201D and \u201Cand\u201D.',
     inputs: ['x', 'y', 'f'],
     outputs: ['out'],
@@ -747,30 +747,18 @@ Not(in=in[15], out=out[15]);</code></pre>
     // Your code here
 }`,
     truthTable: [
-      // 0
-      { x: 0x0000, y: 0xFFFF, zx: 1, nx: 0, zy: 1, ny: 0, f: 1, no: 0, out: 0x0000, zr: 1, ng: 0 },
-      // 1
-      { x: 0x0000, y: 0xFFFF, zx: 1, nx: 1, zy: 1, ny: 1, f: 1, no: 1, out: 0x0001, zr: 0, ng: 0 },
-      // -1
-      { x: 0x0000, y: 0xFFFF, zx: 1, nx: 1, zy: 1, ny: 0, f: 1, no: 0, out: 0xFFFF, zr: 0, ng: 1 },
-      // x
-      { x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 1, ny: 1, f: 0, no: 0, out: 0x0011, zr: 0, ng: 0 },
-      // y
-      { x: 0x0011, y: 0x0003, zx: 1, nx: 1, zy: 0, ny: 0, f: 0, no: 0, out: 0x0003, zr: 0, ng: 0 },
-      // !x
-      { x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 1, ny: 1, f: 0, no: 1, out: 0xFFEE, zr: 0, ng: 1 },
-      // -x
-      { x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 1, ny: 1, f: 1, no: 1, out: 0xFFEF, zr: 0, ng: 1 },
-      // x+1
-      { x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 1, ny: 1, f: 1, no: 1, out: 0x0012, zr: 0, ng: 0 },
-      // x+y
-      { x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 0, ny: 0, f: 1, no: 0, out: 0x0014, zr: 0, ng: 0 },
-      // x-y
-      { x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 0, f: 1, no: 1, out: 0x000E, zr: 0, ng: 0 },
-      // x&y
-      { x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 0, ny: 0, f: 0, no: 0, out: 0x0001, zr: 0, ng: 0 },
-      // x|y
-      { x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 1, f: 0, no: 1, out: 0x0013, zr: 0, ng: 0 },
+      { label: '0', x: 0x0000, y: 0xFFFF, zx: 1, nx: 0, zy: 1, ny: 0, f: 1, no: 0, out: 0x0000, zr: 1, ng: 0 },
+      { label: '1', x: 0x0000, y: 0xFFFF, zx: 1, nx: 1, zy: 1, ny: 1, f: 1, no: 1, out: 0x0001, zr: 0, ng: 0 },
+      { label: '-1', x: 0x0000, y: 0xFFFF, zx: 1, nx: 1, zy: 1, ny: 0, f: 1, no: 0, out: 0xFFFF, zr: 0, ng: 1 },
+      { label: 'x', x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 1, ny: 1, f: 0, no: 0, out: 0x0011, zr: 0, ng: 0 },
+      { label: 'y', x: 0x0011, y: 0x0003, zx: 1, nx: 1, zy: 0, ny: 0, f: 0, no: 0, out: 0x0003, zr: 0, ng: 0 },
+      { label: '\u00ACx', x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 1, ny: 1, f: 0, no: 1, out: 0xFFEE, zr: 0, ng: 1 },
+      { label: '-x', x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 1, ny: 1, f: 1, no: 1, out: 0xFFEF, zr: 0, ng: 1 },
+      { label: 'x+1', x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 1, ny: 1, f: 1, no: 1, out: 0x0012, zr: 0, ng: 0 },
+      { label: 'x+y', x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 0, ny: 0, f: 1, no: 0, out: 0x0014, zr: 0, ng: 0 },
+      { label: 'x-y', x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 0, f: 1, no: 1, out: 0x000E, zr: 0, ng: 0 },
+      { label: 'x\u2227y', x: 0x0011, y: 0x0003, zx: 0, nx: 0, zy: 0, ny: 0, f: 0, no: 0, out: 0x0001, zr: 0, ng: 0 },
+      { label: 'x\u2228y', x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 1, f: 0, no: 1, out: 0x0013, zr: 0, ng: 0 },
     ],
     hints: [
       'You already built every piece. Wire x, y, zx, nx, zy, ny into ALUPreprocess to get conditioned xOut and yOut.',

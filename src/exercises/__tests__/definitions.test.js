@@ -28,7 +28,7 @@ describe('EXERCISES definitions', () => {
       it('has truth table columns matching inputs + outputs', () => {
         const expectedKeys = [...exercise.inputs, ...exercise.outputs].sort();
         for (const row of exercise.truthTable) {
-          const rowKeys = Object.keys(row).sort();
+          const rowKeys = Object.keys(row).filter((k) => k !== 'label').sort();
           expect(rowKeys).toEqual(expectedKeys);
         }
       });
@@ -39,8 +39,18 @@ describe('EXERCISES definitions', () => {
 
       it('has truth table values that are non-negative integers', () => {
         for (const row of exercise.truthTable) {
-          for (const val of Object.values(row)) {
+          for (const [key, val] of Object.entries(row)) {
+            if (key === 'label') continue;
             expect(Number.isInteger(val) && val >= 0).toBe(true);
+          }
+        }
+      });
+
+      it('has non-empty string labels when labels are present', () => {
+        for (const row of exercise.truthTable) {
+          if ('label' in row) {
+            expect(row.label).toBeTypeOf('string');
+            expect(row.label.length).toBeGreaterThan(0);
           }
         }
       });

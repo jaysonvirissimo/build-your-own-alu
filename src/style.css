@@ -304,6 +304,16 @@ header p {
   background: #e0e8f0;
 }
 
+.truth-table .computes-header {
+  background: #efe8dc;
+}
+
+.truth-table .computes-cell {
+  font-weight: bold;
+  text-align: left;
+  border-right: 2px solid #bbb;
+}
+
 /* Result cells */
 .truth-table td.match {
   background: #d4edda;

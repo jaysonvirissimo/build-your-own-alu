@@ -1,9 +1,16 @@
 export function renderSpecTable(exercise) {
   const table = document.createElement('table');
   table.className = 'truth-table';
+  const hasLabels = exercise.truthTable.some(row => row.label !== undefined);
 
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
+  if (hasLabels) {
+    const th = document.createElement('th');
+    th.textContent = 'computes';
+    th.className = 'computes-header';
+    headerRow.appendChild(th);
+  }
   for (const name of [...exercise.inputs, ...exercise.outputs]) {
     const th = document.createElement('th');
     th.textContent = name;
@@ -15,6 +22,12 @@ export function renderSpecTable(exercise) {
   const tbody = document.createElement('tbody');
   for (const row of exercise.truthTable) {
     const tr = document.createElement('tr');
+    if (hasLabels) {
+      const td = document.createElement('td');
+      td.textContent = row.label ?? '';
+      td.className = 'computes-cell';
+      tr.appendChild(td);
+    }
     for (const name of [...exercise.inputs, ...exercise.outputs]) {
       const td = document.createElement('td');
       td.textContent = row[name];
@@ -29,10 +42,17 @@ export function renderSpecTable(exercise) {
 export function renderComparisonTable(exercise, userOutputs) {
   const table = document.createElement('table');
   table.className = 'truth-table comparison-table';
+  const hasLabels = exercise.truthTable.some(row => row.label !== undefined);
 
-  // Header: inputs | expected outputs | your outputs
+  // Header: computes? | inputs | expected outputs | your outputs
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
+  if (hasLabels) {
+    const th = document.createElement('th');
+    th.textContent = 'computes';
+    th.className = 'computes-header';
+    headerRow.appendChild(th);
+  }
   for (const name of exercise.inputs) {
     const th = document.createElement('th');
     th.textContent = name;
@@ -59,6 +79,12 @@ export function renderComparisonTable(exercise, userOutputs) {
     const userRow = userOutputs[i];
     const tr = document.createElement('tr');
 
+    if (hasLabels) {
+      const td = document.createElement('td');
+      td.textContent = expectedRow.label ?? '';
+      td.className = 'computes-cell';
+      tr.appendChild(td);
+    }
     for (const name of exercise.inputs) {
       const td = document.createElement('td');
       td.textContent = expectedRow[name];
