@@ -6,10 +6,10 @@ const BUBBLE_R = 4;
 // Each shape has: body path, optional bubble, text center offset, input/output x offsets.
 const GATE_SHAPES = {
   Not: {
-    body: 'M 0,0 L 58,20 L 0,40 Z',
-    bubble: { cx: 62, cy: 20 },
-    textX: 22, textY: 20,
-    inputX: 0, outputX: 66 + BUBBLE_R,
+    body: 'M 10,10 L 48,20 L 10,30 Z',
+    bubble: { cx: 52, cy: 20 },
+    hideLabel: true,
+    inputX: 0, outputX: 56 + BUBBLE_R,
   },
   And: {
     body: 'M 0,0 H 50 A 20,20 0 0,1 50,40 H 0 Z',
@@ -130,12 +130,14 @@ function renderGate(svg, node) {
       g.appendChild(bubble);
     }
 
-    const text = svgEl('text', {
-      x: shape.textX, y: shape.textY,
-      class: 'gate-label',
-    });
-    text.textContent = node.label;
-    g.appendChild(text);
+    if (!shape.hideLabel) {
+      const text = svgEl('text', {
+        x: shape.textX, y: shape.textY,
+        class: 'gate-label',
+      });
+      text.textContent = node.label;
+      g.appendChild(text);
+    }
 
     svg.appendChild(g);
   } else {
