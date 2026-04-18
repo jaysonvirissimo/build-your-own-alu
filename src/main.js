@@ -135,6 +135,7 @@ function appendExercise(index) {
     const preamble = document.createElement('details');
     preamble.className = 'hdl-guide';
     preamble.innerHTML = exercise.preamble;
+    if (!entry || !entry.solved) preamble.open = true;
     main.appendChild(preamble);
   }
 
