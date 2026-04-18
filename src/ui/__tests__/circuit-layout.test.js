@@ -125,6 +125,39 @@ describe('computeLayout', () => {
     expect(layout.nodes.filter((n) => n.type === 'output')).toHaveLength(1);
   });
 
+  it('populates per-pin metadata on collapsed chips with multiple outputs', () => {
+    const registry = new ChipRegistry();
+    const notDef = parseHDL('CHIP Not { IN in; OUT out; PARTS: Nand(a=in, b=in, out=out); }');
+    registry.register('Not', notDef);
+
+    const parts = Array.from({ length: 11 }, (_, i) =>
+      `Not(in=in[${i}], out=w${i});`
+    ).join('\n');
+    const def = parseHDL(`
+      CHIP Multi {
+        IN in[16];
+        OUT a, b, c;
+        PARTS:
+        ${parts}
+        Not(in=w0, out=a);
+        Not(in=w1, out=b);
+        Not(in=w2, out=c);
+      }
+    `);
+    const layout = computeLayout(def, registry);
+
+    const gates = layout.nodes.filter((n) => n.type === 'gate');
+    expect(gates).toHaveLength(1);
+    expect(gates[0].inputPins).toEqual(['in']);
+    expect(gates[0].outputPins).toEqual(['a', 'b', 'c']);
+
+    const outputEdges = layout.edges.filter((e) => e.from === 'gate:0');
+    expect(outputEdges.map((e) => e.fromPin).sort()).toEqual(['a', 'b', 'c']);
+
+    const inputEdges = layout.edges.filter((e) => e.to === 'gate:0');
+    expect(inputEdges.map((e) => e.toPin)).toEqual(['in']);
+  });
+
   it('records constants on gate nodes', () => {
     const registry = new ChipRegistry();
     const def = parseHDL(`

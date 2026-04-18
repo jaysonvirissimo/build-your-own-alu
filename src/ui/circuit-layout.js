@@ -33,6 +33,7 @@ function collapsedLayout(chipDef) {
     });
     edges.push({
       from: `input:${pin.name}`, to: 'gate:0',
+      toPin: pin.name,
       label: pin.width > 1 ? `${pin.name}[${pin.width}]` : pin.name,
     });
   });
@@ -41,6 +42,8 @@ function collapsedLayout(chipDef) {
   nodes.push({
     id: 'gate:0', type: 'gate', label: chipDef.name,
     x: centerX - gateW / 2, y: centerY - gateH / 2, w: gateW, h: gateH,
+    inputPins: chipDef.inputs.map((p) => p.name),
+    outputPins: chipDef.outputs.map((p) => p.name),
   });
 
   // Output pins
@@ -52,6 +55,7 @@ function collapsedLayout(chipDef) {
     });
     edges.push({
       from: 'gate:0', to: `output:${pin.name}`,
+      fromPin: pin.name,
       label: pin.width > 1 ? `${pin.name}[${pin.width}]` : pin.name,
     });
   });
