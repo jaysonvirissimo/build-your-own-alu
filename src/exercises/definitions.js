@@ -79,7 +79,7 @@ export const EXERCISES = [
     name: 'Or',
     chapter: 1,
     description: 'Outputs 1 when at least one input is 1.',
-    analogy: 'Like a room with two doors \u2014 you can enter through either one.',
+    analogy: 'Like a car\u2019s dome light \u2014 it turns on if any door is open (one, the other, or both).',
     inputs: ['a', 'b'],
     outputs: ['out'],
     skeleton: `CHIP Or {
