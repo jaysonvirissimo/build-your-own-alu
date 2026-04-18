@@ -272,11 +272,51 @@ header p {
 }
 
 /* Truth tables */
+.truth-table-wrapper {
+  margin: 0.5em 0;
+}
+
+.format-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  margin-bottom: 0.35em;
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 12px;
+}
+
+.format-toggle-label {
+  color: #666;
+  margin-right: 0.3em;
+}
+
+.format-toggle-btn {
+  border: 1px solid #bbb;
+  background: #f5f5f5;
+  color: #333;
+  padding: 0.15em 0.55em;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  border-radius: 3px;
+}
+
+.format-toggle-btn:hover {
+  background: #e8e8e8;
+}
+
+.format-toggle-btn.active {
+  background: #2b6cb0;
+  border-color: #2b6cb0;
+  color: #fff;
+  font-weight: bold;
+}
+
 .truth-table {
   border-collapse: collapse;
   font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
   font-size: 14px;
-  margin: 0.5em 0;
+  margin: 0;
 }
 
 .truth-table th,

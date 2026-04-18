@@ -251,6 +251,8 @@ Not(in=in[15], out=out[15]);</code></pre>
     `,
     inputs: ['in'],
     outputs: ['out'],
+    widths: { in: 16, out: 16 },
+    defaultFormat: 'bin',
     skeleton: `CHIP Not16 {
     IN in[16];
     OUT out[16];
@@ -280,6 +282,8 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: null,
     inputs: ['a', 'b'],
     outputs: ['out'],
+    widths: { a: 16, b: 16, out: 16 },
+    defaultFormat: 'bin',
     skeleton: `CHIP And16 {
     IN a[16], b[16];
     OUT out[16];
@@ -308,6 +312,8 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: null,
     inputs: ['a', 'b'],
     outputs: ['out'],
+    widths: { a: 16, b: 16, out: 16 },
+    defaultFormat: 'bin',
     skeleton: `CHIP Or16 {
     IN a[16], b[16];
     OUT out[16];
@@ -335,6 +341,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: null,
     inputs: ['a', 'b', 'sel'],
     outputs: ['out'],
+    widths: { a: 16, b: 16, out: 16 },
     skeleton: `CHIP Mux16 {
     IN a[16], b[16], sel;
     OUT out[16];
@@ -363,6 +370,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like a fire alarm system \u2014 if any sensor triggers, the alarm sounds.',
     inputs: ['in'],
     outputs: ['out'],
+    widths: { in: 8 },
     skeleton: `CHIP Or8Way {
     IN in[8];
     OUT out;
@@ -390,6 +398,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like a 4-channel input selector.',
     inputs: ['a', 'b', 'c', 'd', 'sel'],
     outputs: ['out'],
+    widths: { a: 16, b: 16, c: 16, d: 16, sel: 2, out: 16 },
     skeleton: `CHIP Mux4Way16 {
     IN a[16], b[16], c[16], d[16], sel[2];
     OUT out[16];
@@ -417,6 +426,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like an 8-channel input selector.',
     inputs: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'sel'],
     outputs: ['out'],
+    widths: { a: 16, b: 16, c: 16, d: 16, e: 16, f: 16, g: 16, h: 16, sel: 3, out: 16 },
     skeleton: `CHIP Mux8Way16 {
     IN a[16], b[16], c[16], d[16], e[16], f[16], g[16], h[16], sel[3];
     OUT out[16];
@@ -443,6 +453,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like a train switch with four tracks.',
     inputs: ['in', 'sel'],
     outputs: ['a', 'b', 'c', 'd'],
+    widths: { sel: 2 },
     skeleton: `CHIP DMux4Way {
     IN in, sel[2];
     OUT a, b, c, d;
@@ -474,6 +485,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like a post office sorting machine with eight bins.',
     inputs: ['in', 'sel'],
     outputs: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
+    widths: { sel: 3 },
     skeleton: `CHIP DMux8Way {
     IN in, sel[3];
     OUT a, b, c, d, e, f, g, h;
@@ -564,6 +576,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like stacking 16 FullAdders to do long addition in binary.',
     inputs: ['a', 'b'],
     outputs: ['out'],
+    widths: { a: 16, b: 16, out: 16 },
     skeleton: `CHIP Add16 {
     IN a[16], b[16];
     OUT out[16];
@@ -591,6 +604,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like an odometer clicking forward by one.',
     inputs: ['in'],
     outputs: ['out'],
+    widths: { in: 16, out: 16 },
     skeleton: `CHIP Inc16 {
     IN in[16];
     OUT out[16];
@@ -618,6 +632,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like adjusting two audio channels before mixing \u2014 first choose whether to mute, then whether to invert the signal.',
     inputs: ['x', 'y', 'zx', 'nx', 'zy', 'ny'],
     outputs: ['xOut', 'yOut'],
+    widths: { x: 16, y: 16, xOut: 16, yOut: 16 },
     skeleton: `CHIP ALUPreprocess {
     IN x[16], y[16], zx, nx, zy, ny;
     OUT xOut[16], yOut[16];
@@ -658,6 +673,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like a calculator\u2019s mode switch \u2014 one button flips the same two inputs between \u201Cadd\u201D and \u201Cand\u201D.',
     inputs: ['x', 'y', 'f'],
     outputs: ['out'],
+    widths: { x: 16, y: 16, out: 16 },
     skeleton: `CHIP ALUCompute {
     IN x[16], y[16], f;
     OUT out[16];
@@ -702,6 +718,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     `,
     inputs: ['in', 'no'],
     outputs: ['out', 'zr', 'ng'],
+    widths: { in: 16, out: 16 },
     skeleton: `CHIP ALUPostprocess {
     IN in[16], no;
     OUT out[16], zr, ng;
@@ -739,6 +756,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     analogy: 'Like a calculator\u2019s brain \u2014 one chip that can add, subtract, negate, or compare depending on which buttons are pressed.',
     inputs: ['x', 'y', 'zx', 'nx', 'zy', 'ny', 'f', 'no'],
     outputs: ['out', 'zr', 'ng'],
+    widths: { x: 16, y: 16, out: 16 },
     skeleton: `CHIP ALU {
     IN x[16], y[16], zx, nx, zy, ny, f, no;
     OUT out[16], zr, ng;
