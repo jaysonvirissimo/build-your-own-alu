@@ -566,18 +566,132 @@ Not(in=in[15], out=out[15]);</code></pre>
     ],
   },
   {
+    id: 'alu-preprocess',
+    name: 'ALUPreprocess',
+    chapter: 2,
+    description: 'Applies the ALU\u2019s input-conditioning stage: for each of x and y, optionally zero the value, then optionally negate it.',
+    analogy: 'Like adjusting two audio channels before mixing \u2014 first choose whether to mute, then whether to invert the signal.',
+    inputs: ['x', 'y', 'zx', 'nx', 'zy', 'ny'],
+    outputs: ['xOut', 'yOut'],
+    skeleton: `CHIP ALUPreprocess {
+    IN x[16], y[16], zx, nx, zy, ny;
+    OUT xOut[16], yOut[16];
+
+    PARTS:
+    // Your code here
+}`,
+    truthTable: [
+      // x pipeline exercised, y passed through
+      { x: 0x1234, y: 0x5678, zx: 0, nx: 0, zy: 0, ny: 0, xOut: 0x1234, yOut: 0x5678 },
+      { x: 0x1234, y: 0x5678, zx: 1, nx: 0, zy: 0, ny: 0, xOut: 0x0000, yOut: 0x5678 },
+      { x: 0x1234, y: 0x5678, zx: 0, nx: 1, zy: 0, ny: 0, xOut: 0xEDCB, yOut: 0x5678 },
+      { x: 0x1234, y: 0x5678, zx: 1, nx: 1, zy: 0, ny: 0, xOut: 0xFFFF, yOut: 0x5678 },
+      // y pipeline exercised, x passed through
+      { x: 0x00FF, y: 0x00FF, zx: 0, nx: 0, zy: 0, ny: 0, xOut: 0x00FF, yOut: 0x00FF },
+      { x: 0x00FF, y: 0x00FF, zx: 0, nx: 0, zy: 1, ny: 0, xOut: 0x00FF, yOut: 0x0000 },
+      { x: 0x00FF, y: 0x00FF, zx: 0, nx: 0, zy: 0, ny: 1, xOut: 0x00FF, yOut: 0xFF00 },
+      { x: 0x00FF, y: 0x00FF, zx: 0, nx: 0, zy: 1, ny: 1, xOut: 0x00FF, yOut: 0xFFFF },
+      // Both sides active \u2014 matches the ALU\u2019s x-y intermediate stage
+      { x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 0, xOut: 0xFFEE, yOut: 0x0003 },
+      // Both sides active \u2014 matches the ALU\u2019s x|y intermediate (De Morgan)
+      { x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 1, xOut: 0xFFEE, yOut: 0xFFFC },
+      // Mixed constants: -1 on x, 0 on y
+      { x: 0xABCD, y: 0x1234, zx: 1, nx: 1, zy: 1, ny: 0, xOut: 0xFFFF, yOut: 0x0000 },
+    ],
+    hints: [
+      'Each side (x and y) is independent. Build two identical little pipelines: first an optional zero, then an optional negate.',
+      'For the zero step, Mux16 is your friend: Mux16(a=x, b=false, sel=zx, out=xZeroed) picks x when zx=0, and all-zeros when zx=1.',
+      'For the negate step, compute Not16 of the zeroed value, then Mux16 between the zeroed value and its negation, selected by nx.',
+      'Mirror the same two-Mux16 / one-Not16 wiring for y using zy and ny, ending in xOut and yOut.',
+    ],
+  },
+  {
+    id: 'alu-core',
+    name: 'ALUCompute',
+    chapter: 2,
+    description: 'The arithmetic/logic heart of the ALU: computes x+y when f=1, or x&y when f=0.',
+    analogy: 'Like a calculator\u2019s mode switch \u2014 one button flips the same two inputs between \u201Cadd\u201D and \u201Cand\u201D.',
+    inputs: ['x', 'y', 'f'],
+    outputs: ['out'],
+    skeleton: `CHIP ALUCompute {
+    IN x[16], y[16], f;
+    OUT out[16];
+
+    PARTS:
+    // Your code here
+}`,
+    truthTable: [
+      // f = 1 (add)
+      { x: 0x0000, y: 0x0000, f: 1, out: 0x0000 },
+      { x: 0x0001, y: 0x0001, f: 1, out: 0x0002 },
+      { x: 0x00FF, y: 0xFF00, f: 1, out: 0xFFFF },
+      { x: 0x1234, y: 0x5678, f: 1, out: 0x68AC },
+      // f=1 on preprocessed inputs (matches ALU x-y intermediate)
+      { x: 0xFFEE, y: 0x0003, f: 1, out: 0xFFF1 },
+      // f = 0 (and)
+      { x: 0x0000, y: 0xFFFF, f: 0, out: 0x0000 },
+      { x: 0xFFFF, y: 0xFFFF, f: 0, out: 0xFFFF },
+      { x: 0xAAAA, y: 0x5555, f: 0, out: 0x0000 },
+      { x: 0x1234, y: 0x5678, f: 0, out: 0x1230 },
+      // f=0 on preprocessed inputs (matches ALU x|y intermediate via De Morgan)
+      { x: 0xFFEE, y: 0xFFFC, f: 0, out: 0xFFEC },
+    ],
+    hints: [
+      'This chip has two possible outputs \u2014 an Add16 result and an And16 result \u2014 and f picks between them.',
+      'Compute both in parallel: Add16(a=x, b=y, out=sum); And16(a=x, b=y, out=andOut);',
+      'Then one Mux16 with sel=f finishes it: pass sum when f=1, andOut when f=0.',
+    ],
+  },
+  {
+    id: 'alu-postprocess',
+    name: 'ALUPostprocess',
+    chapter: 2,
+    description: 'Finishes the ALU: optionally negates the 16-bit result, then computes the zero (zr) and negative (ng) status flags.',
+    analogy: 'Like the last stage of a camera pipeline \u2014 apply a final color inversion if requested, then stamp two metadata flags on the image.',
+    preamble: `
+      <summary>Splitting an output to two wires</summary>
+      <p>So far, each chip\u2019s output has gone to exactly one wire. This chip needs something new: the final value of <code>out</code> must also be read back internally to compute <code>zr</code> (is it zero?) and <code>ng</code> (is it negative?).</p>
+      <p>HDL does not let you read from an OUT pin as input to another part. Instead, list the same sub-pin twice with different wires \u2014 the value flows to both:</p>
+      <pre><code>Mux16(a=in, b=notIn, sel=no, out=out, out=outCopy);</code></pre>
+      <p>Now <code>outCopy</code> is an internal wire you can feed into other parts (e.g. <code>Or8Way</code> to detect zero), while <code>out</code> still leaves the chip as the 16-bit result.</p>
+    `,
+    inputs: ['in', 'no'],
+    outputs: ['out', 'zr', 'ng'],
+    skeleton: `CHIP ALUPostprocess {
+    IN in[16], no;
+    OUT out[16], zr, ng;
+
+    PARTS:
+    // Your code here
+}`,
+    truthTable: [
+      // no=0: out=in; flags reflect in
+      { in: 0x0011, no: 0, out: 0x0011, zr: 0, ng: 0 },
+      { in: 0x0000, no: 0, out: 0x0000, zr: 1, ng: 0 },
+      { in: 0xFFFF, no: 0, out: 0xFFFF, zr: 0, ng: 1 },
+      { in: 0xFFF1, no: 0, out: 0xFFF1, zr: 0, ng: 1 },
+      { in: 0x8000, no: 0, out: 0x8000, zr: 0, ng: 1 },
+      // no=1: out = !in; flags reflect the negation
+      { in: 0xFFFF, no: 1, out: 0x0000, zr: 1, ng: 0 },
+      { in: 0x0000, no: 1, out: 0xFFFF, zr: 0, ng: 1 },
+      { in: 0xFFF1, no: 1, out: 0x000E, zr: 0, ng: 0 },
+      { in: 0xFFEC, no: 1, out: 0x0013, zr: 0, ng: 0 },
+      { in: 0x7FFF, no: 1, out: 0x8000, zr: 0, ng: 1 },
+    ],
+    hints: [
+      'Structure: (1) optionally negate in, (2) send that value to out, (3) also feed the same value into logic that computes zr and ng.',
+      'For the optional negate: Not16(in=in, out=notIn); Mux16(a=in, b=notIn, sel=no, out=out, out=outCopy); \u2014 see the box above for why we name the output twice.',
+      'ng is simply the sign bit: out[15]. You can read it by adding out[15]=ng to the Mux16\u2019s output bindings.',
+      'zr = 1 only when all 16 bits of out are 0. Split outCopy into halves, run Or8Way on each, OR the two results together, and invert \u2014 that is zr.',
+      'To split outCopy into halves, add out[0..7]=outLow and out[8..15]=outHigh to the same Mux16 \u2014 HDL lets you bind any number of output slices at once.',
+    ],
+  },
+  {
     id: 'alu',
     name: 'ALU',
     chapter: 2,
-    description: 'Performs one of several arithmetic or logical operations based on 6 control bits.',
+    description: 'Performs one of several arithmetic or logical operations based on 6 control bits. Composes ALUPreprocess, ALUCompute, and ALUPostprocess into a single 16-bit ALU.',
     analogy: 'Like a calculator\u2019s brain \u2014 one chip that can add, subtract, negate, or compare depending on which buttons are pressed.',
-    preamble: `
-      <summary>Splitting an output to two wires</summary>
-      <p>So far, each chip\u2019s output has gone to exactly one wire. The ALU needs something new: the final value of <code>out</code> must also be read back internally to compute <code>zr</code> (is it zero?) and <code>ng</code> (is it negative?).</p>
-      <p>HDL does not let you read from an OUT pin as input to another part. Instead, list the same sub-pin twice with different wires \u2014 the value flows to both:</p>
-      <pre><code>Mux16(a=fOut, b=notFOut, sel=no, out=out, out=outCopy);</code></pre>
-      <p>Now <code>outCopy</code> is an internal wire you can feed into other parts (e.g. <code>Or8Way</code> to detect zero), while <code>out</code> still leaves the chip as the ALU\u2019s 16-bit result.</p>
-    `,
     inputs: ['x', 'y', 'zx', 'nx', 'zy', 'ny', 'f', 'no'],
     outputs: ['out', 'zr', 'ng'],
     skeleton: `CHIP ALU {
@@ -614,11 +728,10 @@ Not(in=in[15], out=out[15]);</code></pre>
       { x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 1, f: 0, no: 1, out: 0x0013, zr: 0, ng: 0 },
     ],
     hints: [
-      'zr and ng depend on out, but HDL won\u2019t let you read an OUT pin as input to another part. Fan the final stage\u2019s output to two wires \u2014 Mux16(..., out=out, out=outCopy); \u2014 then drive zr and ng from outCopy. See the \u201CSplitting an output to two wires\u201D box above.',
-      'Process x and y independently: first zero (zx/zy), then negate (nx/ny)',
-      'Use Mux16 to select: if zx then 0 else x. Then if nx, negate the result.',
-      'f selects Add16 (f=1) or And16 (f=0). Then if no, negate the output.',
-      'zr = 1 when out = 0 (use Or8Way on both halves). ng = out[15] (the sign bit).',
+      'You already built every piece. Wire x, y, zx, nx, zy, ny into ALUPreprocess to get conditioned xOut and yOut.',
+      'Feed those into ALUCompute along with f. It returns one 16-bit value \u2014 name the internal wire something like computed.',
+      'Feed that plus no into ALUPostprocess. Its three outputs are exactly the three outputs of the ALU: out, zr, ng.',
+      'If you reached for a Mux16, Not16, Or8Way, Add16, or And16 in this chip, step back \u2014 all of that logic already lives inside the three helper chips.',
     ],
   },
 ];
