@@ -127,6 +127,48 @@ export const EXERCISES = [
       'a \u2295 b = (a \u2227 \u00ACb) \u2228 (\u00ACa \u2227 b)',
       'You can build this from And, Or, and Not gates',
     ],
+    tutorial: true,
+    tutorialLeadIn: "Xor is the first chip that needs internal wires. Naming them well matters \u2014 we\u2019ll build it twice, first with bad names, then rename.",
+    tutorialSteps: [
+      {
+        code: `CHIP Xor {
+    IN a, b;
+    OUT out;
+
+    PARTS:
+    // Your code here
+}`,
+        explanation: 'Xor = (a \u2227 \u00ACb) \u2228 (\u00ACa \u2227 b). To express that you need four intermediate signals: \u00ACa, \u00ACb, a \u2227 \u00ACb, and \u00ACa \u2227 b. Every intermediate signal travels on a wire, and every wire needs a name. Click "Walk me through it" to see two versions.',
+      },
+      {
+        code: `CHIP Xor {
+    IN a, b;
+    OUT out;
+
+    PARTS:
+    Not(in=a, out=w1);
+    Not(in=b, out=w2);
+    And(a=a, b=w2, out=w3);
+    And(a=w1, b=b, out=w4);
+    Or(a=w3, b=w4, out=out);
+}`,
+        explanation: 'This works, but what do w1..w4 mean? To read this chip you have to mentally re-derive each wire. A week from now you will not remember. Names like w1 leak the order you wrote things \u2014 they describe position, not meaning.',
+      },
+      {
+        code: `CHIP Xor {
+    IN a, b;
+    OUT out;
+
+    PARTS:
+    Not(in=a, out=notA);
+    Not(in=b, out=notB);
+    And(a=a, b=notB, out=aAndNotB);
+    And(a=notA, b=b, out=notAAndB);
+    Or(a=aAndNotB, b=notAAndB, out=out);
+}`,
+        explanation: 'Same circuit, but each wire is now named after the signal it carries. notA = \u00ACa. aAndNotB = a \u2227 \u00ACb. The rule: name a wire for what it is, not where it sits. Camel-case reads well: notA, aAndNotB. Click Run to verify.',
+      },
+    ],
   },
   {
     id: 'mux',
@@ -364,6 +406,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     hints: [
       'sel has 2 bits. Use sel[0] to choose within pairs, sel[1] to choose between pairs.',
       'First Mux16 a,b and c,d using sel[0], then Mux16 the two results using sel[1]',
+      'Canonical wire names: Mux16(a=a, b=b, sel=sel[0], out=ab); Mux16(a=c, b=d, sel=sel[0], out=cd); Mux16(a=ab, b=cd, sel=sel[1], out=out). Each internal wire is named after the pair it came from.',
     ],
   },
   {
@@ -420,6 +463,7 @@ Not(in=in[15], out=out[15]);</code></pre>
     hints: [
       'sel has 2 bits. Demux in two stages.',
       'First DMux by sel[1] into two groups, then DMux each group by sel[0]',
+      'Canonical wire names: DMux(in=in, sel=sel[1], a=top, b=bottom); DMux(in=top, sel=sel[0], a=a, b=b); DMux(in=bottom, sel=sel[0], a=c, b=d). "top" and "bottom" describe the two branches after the first split.',
     ],
   },
   {
@@ -509,6 +553,7 @@ Not(in=in[15], out=out[15]);</code></pre>
       'sum = a \u2295 b \u2295 c',
       'Use two HalfAdders: first add a and b, then add that sum with c',
       'carry = carry\u2081 \u2228 carry\u2082 \u2014 OR the two carry outputs together',
+      'Canonical wire names: HalfAdder(a=a, b=b, sum=ab, carry=carry1); HalfAdder(a=ab, b=c, sum=sum, carry=carry2); Or(a=carry1, b=carry2, out=carry). "ab" = a added to b; carry1/carry2 distinguish the two half-adders.',
     ],
   },
   {
