@@ -1,10 +1,11 @@
 import { createEditor } from './editor.js';
-import { renderSpecTable, renderComparisonTable, checkAllMatch } from './truth-table.js';
+import { renderSpecTable, renderComparisonTable, checkAllMatch, countMismatches } from './truth-table.js';
 import { parseHDL } from '../hdl/parser.js';
 import { simulate } from '../hdl/simulator.js';
-import { saveExercise } from './progress.js';
+import { saveExercise, loadProgress } from './progress.js';
 import { createCircuitDiagram } from './circuit-diagram.js';
 import { renderErrorPanel } from './error-panel.js';
+import { burstConfetti } from './confetti.js';
 
 export function createTutorialSection(exercise, index, registry, onSolved, vimEnabled) {
   const section = document.createElement('section');
@@ -157,13 +158,45 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
       }
     }
 
-    resultsArea.appendChild(renderComparisonTable(exercise, userOutputs));
+    const comparisonTable = renderComparisonTable(exercise, userOutputs);
+    resultsArea.appendChild(comparisonTable);
 
     const allMatch = checkAllMatch(exercise, userOutputs);
+
+    if (!allMatch) {
+      const { failed, total } = countMismatches(exercise, userOutputs);
+      const banner = document.createElement('div');
+      banner.className = 'failure-banner';
+
+      const text = document.createElement('span');
+      text.textContent = `❌ ${failed} of ${total} test case${total === 1 ? '' : 's'} don't match the expected output. `;
+      banner.appendChild(text);
+
+      if (stepIndex < steps.length - 1) {
+        const cta = document.createElement('button');
+        cta.type = 'button';
+        cta.className = 'failure-banner__cta';
+        cta.textContent = 'Walk me through it?';
+        cta.addEventListener('click', () => {
+          walkthroughBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          walkthroughBtn.click();
+        });
+        banner.appendChild(cta);
+      }
+
+      resultsArea.insertBefore(banner, comparisonTable);
+    }
+
+    const wasAlreadySolved = loadProgress().get(exercise.id)?.solved === true;
     saveExercise(exercise.id, code, allMatch);
 
     if (allMatch) {
+      successIndicator.textContent = 'Correct! ✓';
+      successIndicator.classList.remove('playing');
+      void successIndicator.offsetWidth;
+      successIndicator.classList.add('playing');
       successIndicator.style.display = 'block';
+      if (!wasAlreadySolved) burstConfetti(successIndicator);
       registry.register(exercise.name, chipDef);
       onSolved(exercise.id, chipDef, code);
     }
@@ -179,6 +212,7 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
     walkthroughBtn.textContent = 'Walk me through it';
     resultsArea.innerHTML = '';
     successIndicator.style.display = 'none';
+    successIndicator.classList.remove('playing');
     saveExercise(exercise.id, '', false);
   });
 

@@ -93,3 +93,16 @@ export function checkAllMatch(exercise, userOutputs) {
   }
   return true;
 }
+
+export function countMismatches(exercise, userOutputs) {
+  let failed = 0;
+  for (let i = 0; i < exercise.truthTable.length; i++) {
+    for (const name of exercise.outputs) {
+      if (userOutputs[i][name] !== exercise.truthTable[i][name]) {
+        failed++;
+        break;
+      }
+    }
+  }
+  return { failed, total: exercise.truthTable.length };
+}

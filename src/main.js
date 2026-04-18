@@ -149,6 +149,13 @@ function handleSolved(exerciseId) {
   // Only append the next exercise if it exists and isn't already rendered
   if (nextIndex < EXERCISES.length && !exerciseSections[nextIndex]) {
     appendExercise(nextIndex);
-    exerciseSections[nextIndex].section.scrollIntoView({ behavior: 'smooth' });
+    const nextSection = exerciseSections[nextIndex].section;
+    nextSection.classList.add('is-new');
+    nextSection.addEventListener(
+      'animationend',
+      () => nextSection.classList.remove('is-new'),
+      { once: true }
+    );
+    nextSection.scrollIntoView({ behavior: 'smooth' });
   }
 }

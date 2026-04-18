@@ -310,17 +310,80 @@ header p {
 }
 
 .truth-table td.mismatch {
-  background: #f8d7da;
-  color: #721c24;
+  background: #f5a5a5;
+  color: #5a0000;
   font-weight: bold;
+  box-shadow: inset 0 0 0 2px #c00;
+}
+
+/* Failure banner */
+.failure-banner {
+  background: #fff0f0;
+  border-left: 4px solid #c00;
+  color: #3a0000;
+  padding: 0.7em 1em;
+  margin: 0.6em 0;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.failure-banner__cta {
+  background: none;
+  border: none;
+  color: #c00;
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+.failure-banner__cta:hover {
+  color: #800;
 }
 
 /* Success indicator */
+@keyframes success-pop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
 .success-indicator {
+  position: relative;
   color: #28a745;
   font-weight: bold;
-  font-size: 1.1em;
+  font-size: 1.4em;
   margin: 0.5em 0;
+}
+.success-indicator.playing {
+  animation: success-pop 500ms ease-out;
+}
+
+/* Confetti burst */
+.confetti {
+  position: absolute;
+  pointer-events: none;
+  width: 260px;
+  height: 260px;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  overflow: visible;
+}
+.confetti rect {
+  animation: confetti-fly 900ms ease-out forwards;
+  transform-origin: center;
+}
+@keyframes confetti-fly {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(540deg); opacity: 0; }
+}
+
+/* New-exercise flash */
+@keyframes new-exercise-flash {
+  0%   { background: #fff9d6; }
+  100% { background: transparent; }
+}
+.exercise.is-new {
+  animation: new-exercise-flash 1.6s ease-out;
 }
 
 /* Error display */
