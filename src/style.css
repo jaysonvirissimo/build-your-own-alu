@@ -245,6 +245,25 @@ header p {
   color: #c00;
 }
 
+.repo-link {
+  float: right;
+  margin-right: 0.5em;
+  background: none;
+  border: 1px solid #ccc;
+  color: #888;
+  padding: 0.3em 0.8em;
+  font-size: 0.8em;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.repo-link:hover {
+  border-color: #2aa198;
+  color: #2aa198;
+}
+
 /* Results */
 .results-area {
   margin-top: 1em;

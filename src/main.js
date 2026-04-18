@@ -42,6 +42,14 @@ resetAllBtn.addEventListener('click', () => {
 });
 header.appendChild(resetAllBtn);
 
+const repoLink = document.createElement('a');
+repoLink.className = 'repo-link';
+repoLink.href = 'https://github.com/jaysonvirissimo/build-your-own-alu';
+repoLink.target = '_blank';
+repoLink.rel = 'noopener';
+repoLink.textContent = 'GitHub';
+header.appendChild(repoLink);
+
 app.appendChild(header);
 
 const guide = document.createElement('details');
