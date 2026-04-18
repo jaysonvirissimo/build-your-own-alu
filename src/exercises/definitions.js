@@ -193,6 +193,20 @@ export const EXERCISES = [
     chapter: 1,
     description: 'Applies Not to each of the 16 bits independently.',
     analogy: null,
+    preamble: `
+      <summary>Working with multi-bit buses</summary>
+      <p>Until now, every pin has been a single bit. Starting with <code>Not16</code>, chips carry <strong>buses</strong> \u2014 groups of wires bundled under one name. Four new pieces of syntax show up here:</p>
+      <p><strong>Declaring a bus width</strong> \u2014 the square-bracketed number after a pin name is the bus width:</p>
+      <pre><code>IN in[16];
+OUT out[16];</code></pre>
+      <p><strong>Indexing a single bit</strong> \u2014 use <code>name[i]</code> to read or drive one bit of a bus. Bits are numbered from 0:</p>
+      <pre><code>Not(in=in[0], out=out[0]);
+Not(in=in[15], out=out[15]);</code></pre>
+      <p><strong>Slicing a range</strong> \u2014 <code>name[a..b]</code> picks contiguous bits (you\u2019ll see this in later exercises like <code>Or8Way</code> and <code>Mux4Way16</code>):</p>
+      <pre><code>Or8Way(in=in[0..7], out=lowOr);</code></pre>
+      <p><strong>Wiring a whole bus</strong> \u2014 if the widths match, drop the brackets and pass the bus by name:</p>
+      <pre><code>And16(a=x, b=y, out=z);</code></pre>
+    `,
     inputs: ['in'],
     outputs: ['out'],
     skeleton: `CHIP Not16 {
@@ -211,6 +225,7 @@ export const EXERCISES = [
       { in: 0x1234, out: 0xEDCB },
     ],
     hints: [
+      'Each bit is independent: wire up 16 Not parts, one per bit, using bit-indexing like Not(in=in[0], out=out[0]); \u2026 Not(in=in[15], out=out[15]); \u2014 see the \u201CWorking with multi-bit buses\u201D box above.',
       'Apply the single-bit operation to each bit independently',
       'out[i] = \u00ACin[i] for each bit i from 0 to 15',
     ],
