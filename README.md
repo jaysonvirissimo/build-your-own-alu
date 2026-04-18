@@ -6,14 +6,14 @@ An interactive web page where you implement every logic gate from NAND up throug
 
 ## What You Build
 
-Starting with nothing but a NAND gate, you implement 20 chips in sequence:
+Starting with nothing but a NAND gate, you implement 23 chips in sequence:
 
 | Chapter 1 -- Boolean Logic | Chapter 2 -- Boolean Arithmetic |
 |---|---|
 | Not, And, Or, Xor, Mux, DMux | HalfAdder, FullAdder |
 | Not16, And16, Or16, Mux16 | Add16, Inc16 |
-| Or8Way, Mux4Way16, Mux8Way16 | **ALU** |
-| DMux4Way, DMux8Way | |
+| Or8Way, Mux4Way16, Mux8Way16 | ALUPreprocess, ALUCompute, ALUPostprocess |
+| DMux4Way, DMux8Way | **ALU** |
 
 Each gate you solve becomes available as a building block for the next.
 
@@ -23,6 +23,7 @@ Each gate you solve becomes available as a building block for the next.
 - **Instant verification** against truth tables with side-by-side comparison
 - **Circuit diagram** rendered as SVG with conventional gate shapes after each run
 - **Progressive hints** using Boolean algebra notation for when you're stuck
+- **Guided walkthroughs** on select exercises that step you through a solution with inline explanations
 - **Progress saved** in localStorage -- pick up where you left off
 - **Vim keybindings** (optional, toggle in header)
 - **Collapsible HDL guide** for newcomers who haven't seen the syntax before
