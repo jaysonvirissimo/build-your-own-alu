@@ -4,6 +4,7 @@ import { parseHDL } from '../hdl/parser.js';
 import { simulate } from '../hdl/simulator.js';
 import { saveExercise } from './progress.js';
 import { createCircuitDiagram } from './circuit-diagram.js';
+import { renderErrorPanel } from './error-panel.js';
 
 export function createExerciseSection(exercise, index, registry, onSolved, vimEnabled) {
   const section = document.createElement('section');
@@ -109,6 +110,7 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
   runBtn.addEventListener('click', () => {
     resultsArea.innerHTML = '';
     successIndicator.style.display = 'none';
+    editor.clearErrorHighlight();
 
     const code = editor.getCode();
     let chipDef;
@@ -116,16 +118,17 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
     try {
       chipDef = parseHDL(code);
     } catch (err) {
-      showError(resultsArea, err.message);
+      renderErrorPanel(resultsArea, err, editor);
       saveExercise(exercise.id, code, false);
       return;
     }
 
     // Validate chip name
     if (chipDef.name !== exercise.name) {
-      showError(
+      renderErrorPanel(
         resultsArea,
-        `Expected CHIP ${exercise.name}, but found CHIP ${chipDef.name}`
+        new Error(`Expected CHIP ${exercise.name}, but found CHIP ${chipDef.name}`),
+        editor
       );
       saveExercise(exercise.id, code, false);
       return;
@@ -145,7 +148,7 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
         const outputs = simulate(chipDef, inputs, registry);
         userOutputs.push(outputs);
       } catch (err) {
-        showError(resultsArea, err.message);
+        renderErrorPanel(resultsArea, err, editor);
         saveExercise(exercise.id, code, false);
         return;
       }
@@ -166,6 +169,7 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
 
   resetExBtn.addEventListener('click', () => {
     editor.setCode(exercise.skeleton);
+    editor.clearErrorHighlight();
     resultsArea.innerHTML = '';
     successIndicator.style.display = 'none';
     hintArea.innerHTML = '';
@@ -178,11 +182,4 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
   });
 
   return { section, editor };
-}
-
-function showError(container, message) {
-  const pre = document.createElement('pre');
-  pre.className = 'error';
-  pre.textContent = message;
-  container.appendChild(pre);
 }

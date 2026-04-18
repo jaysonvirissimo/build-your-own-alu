@@ -4,6 +4,7 @@ import { parseHDL } from '../hdl/parser.js';
 import { simulate } from '../hdl/simulator.js';
 import { saveExercise } from './progress.js';
 import { createCircuitDiagram } from './circuit-diagram.js';
+import { renderErrorPanel } from './error-panel.js';
 
 export function createTutorialSection(exercise, index, registry, onSolved, vimEnabled) {
   const section = document.createElement('section');
@@ -115,6 +116,7 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
   runBtn.addEventListener('click', () => {
     resultsArea.innerHTML = '';
     successIndicator.style.display = 'none';
+    editor.clearErrorHighlight();
 
     const code = editor.getCode();
     let chipDef;
@@ -122,15 +124,16 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
     try {
       chipDef = parseHDL(code);
     } catch (err) {
-      showError(resultsArea, err.message);
+      renderErrorPanel(resultsArea, err, editor);
       saveExercise(exercise.id, code, false);
       return;
     }
 
     if (chipDef.name !== exercise.name) {
-      showError(
+      renderErrorPanel(
         resultsArea,
-        `Expected CHIP ${exercise.name}, but found CHIP ${chipDef.name}`
+        new Error(`Expected CHIP ${exercise.name}, but found CHIP ${chipDef.name}`),
+        editor
       );
       saveExercise(exercise.id, code, false);
       return;
@@ -148,7 +151,7 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
         const outputs = simulate(chipDef, inputs, registry);
         userOutputs.push(outputs);
       } catch (err) {
-        showError(resultsArea, err.message);
+        renderErrorPanel(resultsArea, err, editor);
         saveExercise(exercise.id, code, false);
         return;
       }
@@ -170,6 +173,7 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
   resetExBtn.addEventListener('click', () => {
     stepIndex = 0;
     editor.setCode(steps[0].code);
+    editor.clearErrorHighlight();
     explanationArea.textContent = steps[0].explanation;
     walkthroughBtn.disabled = false;
     walkthroughBtn.textContent = 'Walk me through it';
@@ -179,11 +183,4 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
   });
 
   return { section, editor };
-}
-
-function showError(container, message) {
-  const pre = document.createElement('pre');
-  pre.className = 'error';
-  pre.textContent = message;
-  container.appendChild(pre);
 }

@@ -3,6 +3,7 @@ import { EditorState, Compartment } from '@codemirror/state';
 import { StreamLanguage } from '@codemirror/language';
 import { autocompletion } from '@codemirror/autocomplete';
 import { vim } from '@replit/codemirror-vim';
+import { errorHighlightExtension, highlightError } from './error-highlight.js';
 
 const hdlLanguage = StreamLanguage.define({
   token(stream) {
@@ -68,6 +69,7 @@ export function createEditor(container, initialDoc, registry, vimEnabled) {
     basicSetup,
     hdlLanguage,
     editorTheme,
+    errorHighlightExtension,
   ];
   if (registry) {
     extensions.push(autocompletion({ override: [chipCompletions(registry)] }));
@@ -98,6 +100,12 @@ export function createEditor(container, initialDoc, registry, vimEnabled) {
       view.dispatch({
         effects: vimCompartment.reconfigure(enabled ? vim() : []),
       });
+    },
+    highlightError(line) {
+      highlightError(view, line);
+    },
+    clearErrorHighlight() {
+      highlightError(view, null);
     },
   };
 }

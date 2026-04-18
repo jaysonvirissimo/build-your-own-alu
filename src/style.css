@@ -336,6 +336,99 @@ pre.error {
   margin: 0;
 }
 
+/* Rich error panel */
+.error-panel {
+  background: #fff0f0;
+  border: 1px solid #ffcccc;
+  border-left: 4px solid #c00;
+  color: #3a0000;
+  padding: 0.8em 1em;
+  border-radius: 4px;
+  margin: 0.5em 0;
+}
+
+.error-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin-bottom: 0.4em;
+}
+
+.error-panel__badge {
+  background: #c00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+.error-panel--chip .error-panel__badge {
+  background: #a15c00;
+}
+
+.error-panel--sim .error-panel__badge {
+  background: #8a1c8a;
+}
+
+.error-panel__location {
+  color: #6a1a1a;
+  font-size: 13px;
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+}
+
+.error-panel__message {
+  margin: 0 0 0.5em 0;
+  color: #3a0000;
+  font-size: 14px;
+}
+
+.error-panel__suggestion {
+  margin: 0 0 0.5em 0;
+  color: #3a3a3a;
+  font-size: 13px;
+  background: #fff7e6;
+  border-left: 3px solid #f0a020;
+  padding: 0.4em 0.6em;
+  border-radius: 0 3px 3px 0;
+}
+
+.error-panel__suggestion code,
+.error-panel__message code {
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0 3px;
+  border-radius: 2px;
+}
+
+.error-panel__raw summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #6a1a1a;
+  user-select: none;
+}
+
+.error-panel__raw pre {
+  margin: 0.4em 0 0 0;
+  padding: 0.6em;
+  background: #fff;
+  border: 1px solid #ffcccc;
+  border-radius: 3px;
+  color: #c00;
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+/* Editor error line highlight */
+.cm-error-line {
+  background: #fff0f0 !important;
+  box-shadow: inset 3px 0 0 0 #c00;
+}
+
 /* Circuit diagram */
 .circuit-diagram {
   margin: 1em 0;

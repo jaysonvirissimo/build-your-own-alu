@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseHDL } from '../parser.js';
+import { ParseError } from '../errors.js';
 
 const conn = (subPin, wire) => ({
   subPin, subBus: null, wire, wireBus: null, isConstant: false,
@@ -26,12 +27,13 @@ describe('parseHDL', () => {
     expect(ast.name).toBe('Not');
     expect(ast.inputs).toEqual([{ name: 'in', width: 1 }]);
     expect(ast.outputs).toEqual([{ name: 'out', width: 1 }]);
-    expect(ast.parts).toEqual([
+    expect(ast.parts).toMatchObject([
       {
         chipName: 'Nand',
         connections: [conn('a', 'in'), conn('b', 'in'), conn('out', 'out')],
       },
     ]);
+    expect(ast.parts[0]).toMatchObject({ line: 6, col: 9 });
   });
 
   it('parses a chip with multiple parts and internal pins', () => {
@@ -233,5 +235,37 @@ describe('parseHDL', () => {
 
   it('throws on unterminated block comment', () => {
     expect(() => parseHDL('/* unclosed CHIP Foo { IN a; OUT b; PARTS: }')).toThrow(/block comment/);
+  });
+
+  it('throws ParseError with line/col for missing semicolon', () => {
+    try {
+      parseHDL('CHIP Foo { IN a OUT b; PARTS: }');
+      throw new Error('expected parseHDL to throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(ParseError);
+      expect(err.line).toBe(1);
+      expect(err.col).toBeGreaterThan(0);
+    }
+  });
+
+  it('throws ParseError with line/col for unexpected character', () => {
+    try {
+      parseHDL('CHIP Foo { IN a; OUT b; PARTS: @bad }');
+      throw new Error('expected parseHDL to throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(ParseError);
+      expect(err.line).toBe(1);
+      expect(err.col).toBe(32);
+    }
+  });
+
+  it('throws ParseError with line/col on second line', () => {
+    try {
+      parseHDL('CHIP Foo {\n  IN a;\n  OUT b\n  PARTS: }');
+      throw new Error('expected parseHDL to throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(ParseError);
+      expect(err.line).toBe(4);
+    }
   });
 });

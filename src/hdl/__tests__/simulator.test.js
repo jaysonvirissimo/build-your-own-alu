@@ -2,6 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { simulate } from '../simulator.js';
 import { ChipRegistry } from '../chips.js';
 import { parseHDL } from '../parser.js';
+import { SimError } from '../errors.js';
+
+function captureThrown(fn) {
+  try {
+    fn();
+  } catch (err) {
+    return err;
+  }
+  throw new Error('expected function to throw');
+}
 
 describe('simulate', () => {
   // --- Single-bit tests (existing) ---
@@ -380,6 +390,81 @@ describe('simulate', () => {
       }
     `);
     expect(() => simulate(def, { a: 0 }, registry)).toThrow(/Bit 0.*multiple parts/);
+  });
+
+  // --- Typed SimError tests ---
+
+  it('throws SimError with chip-missing kind and part line', () => {
+    const registry = new ChipRegistry();
+    const def = parseHDL(`CHIP Foo {
+  IN a;
+  OUT out;
+  PARTS:
+  Or(a=a, b=a, out=out);
+}`);
+    const err = captureThrown(() => simulate(def, { a: 0 }, registry));
+    expect(err).toBeInstanceOf(SimError);
+    expect(err.kind).toBe('chip-missing');
+    expect(err.line).toBe(5);
+  });
+
+  it('throws SimError with missing-input kind on sub-chip and attributes to caller line', () => {
+    const registry = new ChipRegistry();
+    const notDef = parseHDL('CHIP Not { IN in; OUT out; PARTS: Nand(a=in, b=in, out=out); }');
+    registry.register('Not', notDef);
+    const def = parseHDL(`CHIP Foo {
+  IN a;
+  OUT out;
+  PARTS:
+  Not(out=out);
+}`);
+    const err = captureThrown(() => simulate(def, { a: 0 }, registry));
+    expect(err).toBeInstanceOf(SimError);
+    expect(err.kind).toBe('missing-input');
+    expect(err.line).toBe(5);
+  });
+
+  it('throws SimError with multi-driver kind and line of second driver', () => {
+    const registry = new ChipRegistry();
+    const def = parseHDL(`CHIP Bad {
+  IN a;
+  OUT out[2];
+  PARTS:
+  Nand(a=a, b=a, out=out[0]);
+  Nand(a=a, b=a, out=out[0]);
+}`);
+    const err = captureThrown(() => simulate(def, { a: 0 }, registry));
+    expect(err).toBeInstanceOf(SimError);
+    expect(err.kind).toBe('multi-driver');
+    expect(err.line).toBe(6);
+  });
+
+  it('throws SimError with unresolved kind for circular dependency', () => {
+    const registry = new ChipRegistry();
+    const def = parseHDL(`CHIP Bad {
+  IN in;
+  OUT out;
+  PARTS:
+  Nand(a=out, b=in, out=out);
+}`);
+    const err = captureThrown(() => simulate(def, { in: 0 }, registry));
+    expect(err).toBeInstanceOf(SimError);
+    expect(err.kind).toBe('unresolved');
+    expect(err.line).toBe(5);
+  });
+
+  it('throws SimError with output-unassigned kind (no line)', () => {
+    const registry = new ChipRegistry();
+    const def = parseHDL(`CHIP Foo {
+  IN in;
+  OUT out;
+  PARTS:
+  Nand(a=in, b=in, out=intern);
+}`);
+    const err = captureThrown(() => simulate(def, { in: 0 }, registry));
+    expect(err).toBeInstanceOf(SimError);
+    expect(err.kind).toBe('output-unassigned');
+    expect(err.line).toBeNull();
   });
 
   it('simulates Add16 from HalfAdder and FullAdders with carry chain', () => {

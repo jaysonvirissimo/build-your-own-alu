@@ -1,3 +1,5 @@
+import { SimError } from './errors.js';
+
 export function simulate(chipDef, inputs, registry) {
   // Built-in chips have an evaluate function
   if (chipDef.builtin) {
@@ -17,8 +19,9 @@ export function simulate(chipDef, inputs, registry) {
   for (const part of chipDef.parts) {
     if (!registry.has(part.chipName)) {
       const available = registry.getAvailableNames().join(', ');
-      throw new Error(
-        `Chip '${part.chipName}' is not available. Available chips: ${available}`
+      throw new SimError(
+        `Chip '${part.chipName}' is not available. Available chips: ${available}`,
+        { line: part.line ?? null, col: part.col ?? null, kind: 'chip-missing' }
       );
     }
   }
@@ -62,7 +65,10 @@ export function simulate(chipDef, inputs, registry) {
 
   for (const pin of chipDef.inputs) {
     if (!(pin.name in inputs)) {
-      throw new Error(`Missing input '${pin.name}' for chip '${chipDef.name}'`);
+      throw new SimError(
+        `Missing input '${pin.name}' for chip '${chipDef.name}'`,
+        { kind: 'missing-input' }
+      );
     }
     wires.set(pin.name, inputs[pin.name]);
     wireReady.set(pin.name, true);
@@ -90,16 +96,17 @@ export function simulate(chipDef, inputs, registry) {
 
       const bits = getTargetBits(conn, subOut);
       if (!drivenBits.has(conn.wire)) {
-        drivenBits.set(conn.wire, new Set());
+        drivenBits.set(conn.wire, new Map());
       }
       const existing = drivenBits.get(conn.wire);
       for (const bit of bits) {
         if (existing.has(bit)) {
-          throw new Error(
-            `Bit ${bit} of wire '${conn.wire}' is driven by multiple parts`
+          throw new SimError(
+            `Bit ${bit} of wire '${conn.wire}' is driven by multiple parts`,
+            { line: part.line ?? null, col: part.col ?? null, kind: 'multi-driver' }
           );
         }
-        existing.add(bit);
+        existing.set(bit, part);
       }
     }
   }
@@ -145,7 +152,16 @@ export function simulate(chipDef, inputs, registry) {
       if (!ready) continue;
 
       // Simulate the sub-chip
-      const subOutputs = simulate(subChip, subInputs, registry);
+      let subOutputs;
+      try {
+        subOutputs = simulate(subChip, subInputs, registry);
+      } catch (err) {
+        if (err instanceof SimError && err.kind === 'missing-input' && err.line === null) {
+          err.line = part.line ?? null;
+          err.col = part.col ?? null;
+        }
+        throw err;
+      }
 
       // Write outputs to wires
       for (const conn of part.connections) {
@@ -184,16 +200,21 @@ export function simulate(chipDef, inputs, registry) {
 
     if (simulated.every(Boolean)) break;
     if (!progress) {
-      const stuck = chipDef.parts
-        .filter((_, i) => !simulated[i])
-        .map((p) => p.chipName);
+      const stuckParts = chipDef.parts.filter((_, i) => !simulated[i]);
+      const stuck = stuckParts.map((p) => p.chipName);
       const unresolvedWires = [...wireReady.entries()]
         .filter(([, v]) => !v)
         .map(([k]) => k);
-      throw new Error(
+      const firstStuck = stuckParts[0];
+      throw new SimError(
         `Could not resolve all parts in chip '${chipDef.name}'. ` +
         `Stuck parts: ${stuck.join(', ')}. ` +
-        `Unresolved wires: ${unresolvedWires.join(', ')}`
+        `Unresolved wires: ${unresolvedWires.join(', ')}`,
+        {
+          line: firstStuck?.line ?? null,
+          col: firstStuck?.col ?? null,
+          kind: 'unresolved',
+        }
       );
     }
   }
@@ -203,8 +224,9 @@ export function simulate(chipDef, inputs, registry) {
   for (const pin of chipDef.outputs) {
     const val = wires.get(pin.name);
     if (val === undefined) {
-      throw new Error(
-        `Output '${pin.name}' was never assigned in chip '${chipDef.name}'`
+      throw new SimError(
+        `Output '${pin.name}' was never assigned in chip '${chipDef.name}'`,
+        { kind: 'output-unassigned' }
       );
     }
     result[pin.name] = val;

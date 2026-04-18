@@ -1,3 +1,5 @@
+import { ParseError } from './errors.js';
+
 const TOKEN_TYPES = {
   IDENT: 'IDENT',
   NUMBER: 'NUMBER',
@@ -81,7 +83,10 @@ function tokenize(source) {
         pos++;
       }
       if (pos >= source.length && !(source[pos - 2] === '*' && source[pos - 1] === '/')) {
-        throw new Error(`Line ${startLine}, col ${startCol}: Unterminated block comment`);
+        throw new ParseError(
+          `Line ${startLine}, col ${startCol}: Unterminated block comment`,
+          { line: startLine, col: startCol }
+        );
       }
       continue;
     }
@@ -96,7 +101,10 @@ function tokenize(source) {
 
     // Single dot is an error
     if (source[pos] === '.' && source[pos + 1] !== '.') {
-      throw new Error(`Line ${line}, col ${col}: Unexpected character '.'. Did you mean '..'?`);
+      throw new ParseError(
+        `Line ${line}, col ${col}: Unexpected character '.'. Did you mean '..'?`,
+        { line, col }
+      );
     }
 
     const startLine = line;
@@ -147,7 +155,10 @@ function tokenize(source) {
       continue;
     }
 
-    throw new Error(`Line ${startLine}, col ${startCol}: Unexpected character '${ch}'`);
+    throw new ParseError(
+      `Line ${startLine}, col ${startCol}: Unexpected character '${ch}'`,
+      { line: startLine, col: startCol }
+    );
   }
 
   tokens.push({ type: TOKEN_TYPES.EOF, value: '', line, col });
@@ -164,8 +175,9 @@ function parse(tokens) {
   function expect(type, contextMsg) {
     const tok = current();
     if (tok.type !== type) {
-      throw new Error(
-        `Line ${tok.line}, col ${tok.col}: Expected ${TOKEN_DISPLAY[type]} ${contextMsg || ''}, got ${TOKEN_DISPLAY[tok.type]} '${tok.value}'`
+      throw new ParseError(
+        `Line ${tok.line}, col ${tok.col}: Expected ${TOKEN_DISPLAY[type]} ${contextMsg || ''}, got ${TOKEN_DISPLAY[tok.type]} '${tok.value}'`,
+        { line: tok.line, col: tok.col }
       );
     }
     pos++;
@@ -175,8 +187,9 @@ function parse(tokens) {
   function expectIdent(value, contextMsg) {
     const tok = current();
     if (tok.type !== TOKEN_TYPES.IDENT || tok.value !== value) {
-      throw new Error(
-        `Line ${tok.line}, col ${tok.col}: Expected '${value}' ${contextMsg || ''}, got '${tok.value}'`
+      throw new ParseError(
+        `Line ${tok.line}, col ${tok.col}: Expected '${value}' ${contextMsg || ''}, got '${tok.value}'`,
+        { line: tok.line, col: tok.col }
       );
     }
     pos++;
@@ -226,7 +239,8 @@ function parse(tokens) {
   }
 
   function parsePartStatement() {
-    const chipName = expect(TOKEN_TYPES.IDENT, 'as chip name').value;
+    const chipTok = expect(TOKEN_TYPES.IDENT, 'as chip name');
+    const chipName = chipTok.value;
     expect(TOKEN_TYPES.LPAREN, `after chip name '${chipName}'`);
     const connections = [];
     if (current().type !== TOKEN_TYPES.RPAREN) {
@@ -238,7 +252,7 @@ function parse(tokens) {
     }
     expect(TOKEN_TYPES.RPAREN, `in part '${chipName}'`);
     expect(TOKEN_TYPES.SEMICOLON, `after part '${chipName}'`);
-    return { chipName, connections };
+    return { chipName, connections, line: chipTok.line, col: chipTok.col };
   }
 
   function parseParts() {
@@ -266,8 +280,9 @@ function parse(tokens) {
 
   if (current().type !== TOKEN_TYPES.EOF) {
     const tok = current();
-    throw new Error(
-      `Line ${tok.line}, col ${tok.col}: Unexpected content after chip definition: '${tok.value}'`
+    throw new ParseError(
+      `Line ${tok.line}, col ${tok.col}: Unexpected content after chip definition: '${tok.value}'`,
+      { line: tok.line, col: tok.col }
     );
   }
 
