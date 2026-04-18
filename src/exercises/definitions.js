@@ -556,6 +556,13 @@ export const EXERCISES = [
     chapter: 2,
     description: 'Performs one of several arithmetic or logical operations based on 6 control bits.',
     analogy: 'Like a calculator\u2019s brain \u2014 one chip that can add, subtract, negate, or compare depending on which buttons are pressed.',
+    preamble: `
+      <summary>Splitting an output to two wires</summary>
+      <p>So far, each chip\u2019s output has gone to exactly one wire. The ALU needs something new: the final value of <code>out</code> must also be read back internally to compute <code>zr</code> (is it zero?) and <code>ng</code> (is it negative?).</p>
+      <p>HDL does not let you read from an OUT pin as input to another part. Instead, list the same sub-pin twice with different wires \u2014 the value flows to both:</p>
+      <pre><code>Mux16(a=fOut, b=notFOut, sel=no, out=out, out=outCopy);</code></pre>
+      <p>Now <code>outCopy</code> is an internal wire you can feed into other parts (e.g. <code>Or8Way</code> to detect zero), while <code>out</code> still leaves the chip as the ALU\u2019s 16-bit result.</p>
+    `,
     inputs: ['x', 'y', 'zx', 'nx', 'zy', 'ny', 'f', 'no'],
     outputs: ['out', 'zr', 'ng'],
     skeleton: `CHIP ALU {
@@ -592,6 +599,7 @@ export const EXERCISES = [
       { x: 0x0011, y: 0x0003, zx: 0, nx: 1, zy: 0, ny: 1, f: 0, no: 1, out: 0x0013, zr: 0, ng: 0 },
     ],
     hints: [
+      'zr and ng depend on out, but HDL won\u2019t let you read an OUT pin as input to another part. Fan the final stage\u2019s output to two wires \u2014 Mux16(..., out=out, out=outCopy); \u2014 then drive zr and ng from outCopy. See the \u201CSplitting an output to two wires\u201D box above.',
       'Process x and y independently: first zero (zx/zy), then negate (nx/ny)',
       'Use Mux16 to select: if zx then 0 else x. Then if nx, negate the result.',
       'f selects Add16 (f=1) or And16 (f=0). Then if no, negate the output.',

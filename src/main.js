@@ -132,6 +132,13 @@ function appendExercise(index) {
     editor.setCode(entry.code);
   }
 
+  if (exercise.preamble) {
+    const preamble = document.createElement('details');
+    preamble.className = 'hdl-guide';
+    preamble.innerHTML = exercise.preamble;
+    main.appendChild(preamble);
+  }
+
   main.appendChild(section);
   exerciseSections[index] = { section, editor };
 }
