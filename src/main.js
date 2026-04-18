@@ -57,15 +57,14 @@ guide.className = 'hdl-guide';
 guide.innerHTML = `
   <summary>How to write HDL</summary>
   <p>Each chip is defined with a name, inputs, outputs, and a list of parts that wire together:</p>
-  <pre><code>CHIP And {
+  <pre><code>CHIP MyChip {
     IN a, b;
     OUT out;
 
     PARTS:
-    Nand(a=a, b=b, out=nandOut);
-    Nand(a=nandOut, b=nandOut, out=out);
+    // your parts go here
 }</code></pre>
-  <p>Each line in <strong>PARTS</strong> places a chip and connects its pins to wires.
+  <p>Each line in <strong>PARTS</strong> places a chip and connects its pins to wires, e.g. <code>Foo(in=x, out=y)</code>.
   The left side of <code>=</code> is the pin on the chip you're placing.
   The right side is the wire name in your design.
   Any name that isn't an input or output becomes an internal wire.</p>
