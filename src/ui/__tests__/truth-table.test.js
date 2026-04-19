@@ -303,6 +303,54 @@ describe('renderSpecTable', () => {
   });
 });
 
+describe('nibble legend', () => {
+  it('is present but hidden on Not16 (bin default)', () => {
+    const wrapper = renderSpecTable(not16Exercise);
+    const legend = wrapper.querySelector('.nibble-legend');
+    expect(legend).not.toBeNull();
+    expect(legend.hidden).toBe(true);
+  });
+
+  it('is visible on Mux16 (hex default)', () => {
+    const wrapper = renderSpecTable(mux16Exercise);
+    const legend = wrapper.querySelector('.nibble-legend');
+    expect(legend).not.toBeNull();
+    expect(legend.hidden).toBe(false);
+  });
+
+  it('contains all 16 nibble chips with the expected mapping', () => {
+    const wrapper = renderSpecTable(mux16Exercise);
+    const chips = wrapper.querySelectorAll('.nibble-legend-chip');
+    expect(chips).toHaveLength(16);
+    expect(chips[0].textContent).toBe('0000=0');
+    expect(chips[10].textContent).toBe('1010=A');
+    expect(chips[15].textContent).toBe('1111=F');
+  });
+
+  it('appears when the learner clicks hex, hides again on bin or dec', () => {
+    const wrapper = renderSpecTable(not16Exercise);
+    const btns = wrapper.querySelectorAll('.format-toggle-btn');
+    const hexBtn = btns.find((b) => b.textContent === 'hex');
+    const binBtn = btns.find((b) => b.textContent === 'bin');
+    const decBtn = btns.find((b) => b.textContent === 'dec');
+    const legend = wrapper.querySelector('.nibble-legend');
+
+    hexBtn.click();
+    expect(legend.hidden).toBe(false);
+    binBtn.click();
+    expect(legend.hidden).toBe(true);
+    hexBtn.click();
+    expect(legend.hidden).toBe(false);
+    decBtn.click();
+    expect(legend.hidden).toBe(true);
+  });
+
+  it('is not rendered for purely single-bit exercises', () => {
+    const wrapper = renderSpecTable(singleBitExercise);
+    expect(wrapper.querySelector('.nibble-legend')).toBeNull();
+  });
+});
+
 describe('renderComparisonTable', () => {
   const userOutputs = [
     { out: 0x5555 },

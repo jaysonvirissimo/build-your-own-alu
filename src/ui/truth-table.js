@@ -5,6 +5,7 @@ import {
   getStoredFormat,
   setStoredFormat,
   VALID_FORMATS,
+  NIBBLE_LEGEND,
 } from './format-value.js';
 
 const FORMAT_CHANGE_EVENT = 'byoa-format-change';
@@ -54,6 +55,30 @@ function renderFormatToggle(wrapper, exercise) {
   wrapper.appendChild(toggle);
 }
 
+function renderNibbleLegend(wrapper, exercise) {
+  const legend = document.createElement('div');
+  legend.className = 'nibble-legend';
+
+  const caption = document.createElement('span');
+  caption.className = 'nibble-legend-caption';
+  caption.textContent = 'each hex digit = 4 bits';
+  legend.appendChild(caption);
+
+  const row = document.createElement('div');
+  row.className = 'nibble-legend-row';
+  for (const [bits, hex] of NIBBLE_LEGEND) {
+    const chip = document.createElement('span');
+    chip.className = 'nibble-legend-chip';
+    chip.textContent = `${bits}=${hex}`;
+    row.appendChild(chip);
+  }
+  legend.appendChild(row);
+
+  legend.hidden = currentFormatFor(exercise) !== 'hex';
+  wrapper.appendChild(legend);
+  return legend;
+}
+
 function makeValueCell(exercise, pinName, value) {
   const td = document.createElement('td');
   td.dataset.pin = pinName;
@@ -79,7 +104,11 @@ function wrapTable(exercise, table) {
 
   if (hasMultiBitPin(exercise)) {
     renderFormatToggle(wrapper, exercise);
-    const onFormatChange = () => refreshValueCells(wrapper, exercise);
+    const legend = renderNibbleLegend(wrapper, exercise);
+    const onFormatChange = () => {
+      refreshValueCells(wrapper, exercise);
+      legend.hidden = currentFormatFor(exercise) !== 'hex';
+    };
     document.addEventListener(FORMAT_CHANGE_EVENT, onFormatChange);
   }
 

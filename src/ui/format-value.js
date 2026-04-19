@@ -1,6 +1,13 @@
 export const STORAGE_KEY = 'byoa-number-format';
 export const VALID_FORMATS = ['dec', 'hex', 'bin'];
 
+export const NIBBLE_LEGEND = [
+  ['0000', '0'], ['0001', '1'], ['0010', '2'], ['0011', '3'],
+  ['0100', '4'], ['0101', '5'], ['0110', '6'], ['0111', '7'],
+  ['1000', '8'], ['1001', '9'], ['1010', 'A'], ['1011', 'B'],
+  ['1100', 'C'], ['1101', 'D'], ['1110', 'E'], ['1111', 'F'],
+];
+
 export function formatValue(value, width, format) {
   const w = Math.max(1, width | 0);
   const v = Number(value) >>> 0;
