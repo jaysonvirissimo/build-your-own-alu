@@ -570,6 +570,47 @@ pre.error {
   box-shadow: inset 3px 0 0 0 #c00;
 }
 
+/* Top row: truth table + circuit diagram, above the editor */
+.exercise-top-row {
+  display: flex;
+  gap: 1.5em;
+  align-items: flex-start;
+  margin: 1em 0;
+  min-height: 280px;
+}
+
+.exercise-spec-pane,
+.exercise-diagram-pane {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.exercise-spec-pane > h3,
+.exercise-diagram-pane > h3 {
+  margin-top: 0;
+}
+
+.circuit-diagram-placeholder {
+  color: #888;
+  font-style: italic;
+  padding: 1em;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+}
+
+@media (max-width: 760px) {
+  .exercise-top-row {
+    flex-direction: column;
+    min-height: 0;
+  }
+  .exercise-spec-pane,
+  .exercise-diagram-pane {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+}
+
 /* Circuit diagram */
 .circuit-diagram {
   margin: 1em 0;
@@ -578,8 +619,6 @@ pre.error {
 
 .circuit-diagram svg {
   display: block;
-  max-width: 100%;
-  height: auto;
 }
 
 .gate-box {

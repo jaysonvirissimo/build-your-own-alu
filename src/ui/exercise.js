@@ -3,7 +3,7 @@ import { renderSpecTable, renderComparisonTable, checkAllMatch, countMismatches 
 import { parseHDL } from '../hdl/parser.js';
 import { simulate } from '../hdl/simulator.js';
 import { saveExercise, loadProgress } from './progress.js';
-import { createCircuitDiagram } from './circuit-diagram.js';
+import { createLiveDiagram } from './circuit-diagram.js';
 import { renderErrorPanel } from './error-panel.js';
 import { burstConfetti } from './confetti.js';
 
@@ -38,11 +38,25 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
   available.textContent = 'Available chips: ' + registry.getAvailableNames().join(', ');
   section.appendChild(available);
 
-  // Spec table
+  // Top row: truth table left, circuit diagram right
+  const topRow = document.createElement('div');
+  topRow.className = 'exercise-top-row';
+
+  const specPane = document.createElement('div');
+  specPane.className = 'exercise-spec-pane';
   const specLabel = document.createElement('h3');
   specLabel.textContent = 'Truth Table';
-  section.appendChild(specLabel);
-  section.appendChild(renderSpecTable(exercise));
+  specPane.append(specLabel, renderSpecTable(exercise));
+
+  const diagramPane = document.createElement('div');
+  diagramPane.className = 'exercise-diagram-pane';
+  const diagLabel = document.createElement('h3');
+  diagLabel.textContent = 'Circuit Diagram';
+  const diagram = createLiveDiagram();
+  diagramPane.append(diagLabel, diagram.container);
+
+  topRow.append(specPane, diagramPane);
+  section.appendChild(topRow);
 
   // Editor
   const editorContainer = document.createElement('div');
@@ -50,6 +64,24 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
   section.appendChild(editorContainer);
 
   const editor = createEditor(editorContainer, exercise.skeleton, registry, vimEnabled);
+
+  let debounceTimer = null;
+  function scheduleDiagramUpdate() {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
+      let chipDef;
+      try { chipDef = parseHDL(editor.getCode()); } catch { return; }
+      try { diagram.update(chipDef, registry); } catch { /* unknown sub-chip mid-type */ }
+    }, 250);
+  }
+  editor.onDocChange(scheduleDiagramUpdate);
+
+  try {
+    diagram.update(parseHDL(editor.getCode()), registry);
+  } catch {
+    diagram.showPlaceholder('Start typing HDL to see the diagram');
+  }
 
   // Buttons
   const buttonRow = document.createElement('div');
@@ -135,8 +167,9 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
       return;
     }
 
-    // Render circuit diagram
-    resultsArea.appendChild(createCircuitDiagram(chipDef, registry));
+    // Sync live diagram with what we just parsed (Run may have preempted the debounce)
+    if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
+    try { diagram.update(chipDef, registry); } catch { /* keep last good */ }
 
     // Run simulation for each truth table row
     const userOutputs = [];

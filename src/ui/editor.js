@@ -62,6 +62,7 @@ function chipCompletions(registry) {
 export function createEditor(container, initialDoc, registry, vimEnabled) {
   const vimCompartment = new Compartment();
   const readOnlyCompartment = new Compartment();
+  const docChangeHandlers = [];
 
   const extensions = [
     vimCompartment.of(vimEnabled ? vim() : []),
@@ -70,6 +71,11 @@ export function createEditor(container, initialDoc, registry, vimEnabled) {
     hdlLanguage,
     editorTheme,
     errorHighlightExtension,
+    EditorView.updateListener.of((update) => {
+      if (update.docChanged) {
+        for (const fn of docChangeHandlers) fn();
+      }
+    }),
   ];
   if (registry) {
     extensions.push(autocompletion({ override: [chipCompletions(registry)] }));
@@ -100,6 +106,9 @@ export function createEditor(container, initialDoc, registry, vimEnabled) {
       view.dispatch({
         effects: vimCompartment.reconfigure(enabled ? vim() : []),
       });
+    },
+    onDocChange(fn) {
+      docChangeHandlers.push(fn);
     },
     highlightError(line) {
       highlightError(view, line);
