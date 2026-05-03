@@ -619,51 +619,8 @@ pre.error {
 
 .circuit-diagram svg {
   display: block;
-}
-
-.gate-box {
-  fill: white;
-  stroke: #2aa198;
-  stroke-width: 2;
-}
-
-.wire {
-  stroke: #999;
-  stroke-width: 1.5;
-  fill: none;
-}
-
-.pin-dot {
-  fill: #2aa198;
-}
-
-.wire-label {
-  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
-  font-size: 10px;
-  fill: #777;
-  paint-order: stroke;
-  stroke: #fafafa;
-  stroke-width: 3px;
-}
-
-.gate-label {
-  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
-  font-size: 13px;
-  fill: #1a1a1a;
-  text-anchor: middle;
-  dominant-baseline: central;
-}
-
-.pin-label {
-  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
-  font-size: 12px;
-  fill: #1a1a1a;
-}
-
-.constant-label {
-  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
-  font-size: 10px;
-  fill: #999;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Tutorial variant */
