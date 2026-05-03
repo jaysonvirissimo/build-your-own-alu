@@ -1,6 +1,17 @@
-import * as netlistsvg from 'netlistsvg';
-import skinSvg from './netlist-skin.svg?raw';
 import { chipDefToNetlist } from './netlist-converter.js';
+
+// netlistsvg + ELK weigh ~600 KB gzipped — defer them until the first render
+// is actually requested, and reuse the loaded modules for subsequent calls.
+let rendererPromise = null;
+function loadRenderer() {
+  if (!rendererPromise) {
+    rendererPromise = Promise.all([
+      import('netlistsvg'),
+      import('./netlist-skin.svg?raw'),
+    ]).then(([mod, skin]) => ({ render: mod.render, skin: skin.default }));
+  }
+  return rendererPromise;
+}
 
 // netlistsvg's raw SVG output is too small to read at native size — a single-
 // gate chip is ~160 px wide with ~10 px text. Scale up uniformly while
@@ -33,14 +44,8 @@ export function createLiveDiagram() {
         console.error('[circuit-diagram] converter failed:', err);
         return;
       }
-      let promise;
-      try {
-        promise = netlistsvg.render(skinSvg, netlist);
-      } catch (err) {
-        console.error('[circuit-diagram] netlistsvg.render threw:', err);
-        return;
-      }
-      promise
+      loadRenderer()
+        .then(({ render, skin }) => render(skin, netlist))
         .then((svgString) => {
           if (token !== renderToken) return; // stale
           const svg = parseAndScale(svgString);
