@@ -6,6 +6,13 @@
 // "0" and "1" (strings) are reserved for constant low/high signals per Yosys
 // convention.
 
+// Chips with more parts than this render as a single labeled black box
+// instead of expanding every internal gate. Matches the threshold used by the
+// previous hand-rolled layout (deleted circuit-layout.js). Above ~10 parts the
+// layout becomes too dense to read at the diagram pane's typical width, and
+// the educational value of seeing every internal wire drops off.
+const COLLAPSE_THRESHOLD = 10;
+
 // Maps known HDL chip names to Yosys gate primitives. Cells of these types
 // render with conventional schematic symbols from netlistsvg's default skin.
 // Pin-name mapping converts our HDL pin names to the symbol's expected pids.
@@ -29,6 +36,10 @@ export function chipDefToNetlist(chipDef, registry) {
   }
   for (const pin of chipDef.outputs) {
     ports[pin.name] = { direction: 'output', bits: [...wireBits.get(pin.name)] };
+  }
+
+  if (chipDef.parts.length > COLLAPSE_THRESHOLD) {
+    return collapsedNetlist(chipDef, ports, wireBits);
   }
 
   const cells = {};
@@ -78,14 +89,14 @@ export function chipDefToNetlist(chipDef, registry) {
       if (slots.every((b) => b === undefined)) continue;
       const renamed = renamePin(sub.name);
       port_directions[renamed] = 'input';
-      connections[renamed] = slots.map((b) => (b === undefined ? '0' : b));
+      connections[renamed] = slots.map((b) => (b === undefined ? 'x' : b));
     }
     for (const sub of subChip.outputs) {
       const slots = portBits.get(sub.name);
       if (slots.every((b) => b === undefined)) continue;
       const renamed = renamePin(sub.name);
       port_directions[renamed] = 'output';
-      connections[renamed] = slots.map((b) => (b === undefined ? '0' : b));
+      connections[renamed] = slots.map((b) => (b === undefined ? 'x' : b));
     }
 
     const cellKey = `${part.chipName}$${i}`;
@@ -110,33 +121,51 @@ export function chipDefToNetlist(chipDef, registry) {
 
 // Mirrors the wire-width inference in src/hdl/simulator.js: chip-level pins
 // have explicit widths; internal wires take their width from whatever sub-pin
-// drives them (with bus indexing/slicing taken into account).
+// drives them (with bus indexing/slicing taken into account). Reads from a
+// bus index/slice also lower-bound the wire's width — well-formed HDL won't
+// rely on this, but it keeps the converter robust to partially-typed code.
 function inferWireWidths(chipDef, registry) {
   const widths = new Map();
+  const bumpWidth = (name, w) => {
+    const existing = widths.get(name);
+    if (existing === undefined || w > existing) widths.set(name, w);
+  };
+
   for (const pin of chipDef.inputs) widths.set(pin.name, pin.width);
   for (const pin of chipDef.outputs) widths.set(pin.name, pin.width);
 
   for (const part of chipDef.parts) {
     const subChip = registry.get(part.chipName);
     if (!subChip) continue;
+    const subInputs = new Map(subChip.inputs.map((p) => [p.name, p]));
     const subOutputs = new Map(subChip.outputs.map((p) => [p.name, p]));
+
     for (const conn of part.connections) {
       if (conn.isConstant) continue;
-      const subOut = subOutputs.get(conn.subPin);
-      if (!subOut) continue; // input connection
 
-      let width;
-      if (conn.wireBus !== null) {
-        width = 'index' in conn.wireBus ? conn.wireBus.index + 1 : conn.wireBus.end + 1;
-      } else if (conn.subBus !== null) {
-        width = 'index' in conn.subBus ? 1 : conn.subBus.end - conn.subBus.start + 1;
-      } else {
-        width = subOut.width;
+      const subOut = subOutputs.get(conn.subPin);
+      if (subOut) {
+        // Output connection: this part drives `conn.wire`, so the wire must
+        // be at least as wide as what's being written.
+        let width;
+        if (conn.wireBus !== null) {
+          width = 'index' in conn.wireBus ? conn.wireBus.index + 1 : conn.wireBus.end + 1;
+        } else if (conn.subBus !== null) {
+          width = 'index' in conn.subBus ? 1 : conn.subBus.end - conn.subBus.start + 1;
+        } else {
+          width = subOut.width;
+        }
+        bumpWidth(conn.wire, width);
+        continue;
       }
 
-      const existing = widths.get(conn.wire);
-      if (existing === undefined || width > existing) {
-        widths.set(conn.wire, width);
+      const subIn = subInputs.get(conn.subPin);
+      if (subIn && conn.wireBus !== null) {
+        // Sliced read: the wire must contain the bit being read.
+        const minWidth = 'index' in conn.wireBus
+          ? conn.wireBus.index + 1
+          : conn.wireBus.end + 1;
+        bumpWidth(conn.wire, minWidth);
       }
     }
   }
@@ -171,6 +200,35 @@ function assignBitIds(chipDef, widths) {
     wireBits.set(name, bits);
   }
   return wireBits;
+}
+
+// For chips above COLLAPSE_THRESHOLD parts, emit a single black-box cell
+// rather than expanding every internal gate. The cell's type is the chip
+// name and its ports mirror the chip's own inputs/outputs, so each chip
+// input/output port wires straight through to the corresponding cell pin.
+function collapsedNetlist(chipDef, ports, wireBits) {
+  const port_directions = {};
+  const connections = {};
+  for (const pin of chipDef.inputs) {
+    port_directions[pin.name] = 'input';
+    connections[pin.name] = [...wireBits.get(pin.name)];
+  }
+  for (const pin of chipDef.outputs) {
+    port_directions[pin.name] = 'output';
+    connections[pin.name] = [...wireBits.get(pin.name)];
+  }
+  const cells = {
+    [`${chipDef.name}$0`]: {
+      type: chipDef.name,
+      port_directions,
+      connections,
+    },
+  };
+  const netnames = {};
+  for (const [name, bits] of wireBits) {
+    netnames[name] = { bits: [...bits], hide_name: 0, attributes: {} };
+  }
+  return { modules: { [chipDef.name]: { ports, cells, netnames } } };
 }
 
 // Convert a bus notation ({index} or {start, end} or null) into an array of

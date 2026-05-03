@@ -1,6 +1,9 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'vite';
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   base: '/build-your-own-alu/',
@@ -11,13 +14,8 @@ export default defineConfig({
       // bundle the dev server can't serve. Force it to use the modern elkjs
       // we installed at the top level — it ships a self-contained browser
       // bundle with no Node-only deps.
-      elkjs: fileURLToPath(new URL('./node_modules/elkjs/lib/elk.bundled.js', import.meta.url)),
-      'webworker-threads': fileURLToPath(new URL('./src/ui/empty-stub.js', import.meta.url)),
-    },
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      define: { global: 'globalThis' },
+      elkjs: path.resolve(projectRoot, 'node_modules/elkjs/lib/elk.bundled.js'),
+      'webworker-threads': path.resolve(projectRoot, 'build-shims/empty-stub.js'),
     },
   },
   test: {},
