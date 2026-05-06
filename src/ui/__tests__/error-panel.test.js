@@ -116,7 +116,8 @@ describe('renderErrorPanel', () => {
     expect(panel.className).toContain('error-panel--sim');
     expect(panel.querySelector('.error-panel__badge').textContent).toBe('Simulation error');
     expect(panel.querySelector('.error-panel__location')).toBeNull();
-    expect(panel.querySelector('.error-panel__suggestion').textContent).toMatch(/out=/);
+    expect(panel.querySelector('.error-panel__suggestion').textContent).toMatch(/Output 'out'/);
+    expect(panel.querySelector('.error-panel__suggestion').textContent).toMatch(/each output/i);
   });
 
   it('categorizes plain "Expected CHIP" message as "Chip error"', () => {

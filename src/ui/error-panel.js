@@ -19,8 +19,13 @@ function categorize(err) {
 function suggestionFor(err) {
   if (err instanceof SimError) {
     switch (err.kind) {
-      case 'output-unassigned':
-        return "This chip's output pin was never connected. Did you forget an `out=<pin>` in one of your sub-chip connections?";
+      case 'output-unassigned': {
+        const missing = err.message.match(/Output '([^']+)'/)?.[1];
+        if (missing) {
+          return `Output '${missing}' was never connected. Chips with multiple outputs need each output connected separately.`;
+        }
+        return 'This chip has an output pin that was never connected. Make sure every output listed after OUT is driven by some part.';
+      }
       case 'chip-missing':
         return 'Chip names are case-sensitive. Check spelling — only chips listed below the editor as "Available chips" can be used here.';
       case 'missing-input':

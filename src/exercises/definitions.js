@@ -207,6 +207,15 @@ export const EXERCISES = [
     chapter: 1,
     description: 'Routes a single input to one of two outputs based on a selector bit.',
     analogy: 'Like a mail sorter \u2014 one incoming letter, routed to one of two mailboxes.',
+    preamble: `
+      <summary>Working with multiple outputs</summary>
+      <p><code>DMux</code> is the first chip with more than one output. When a chip says:</p>
+      <pre><code>OUT a, b;</code></pre>
+      <p>both output pins need to be connected somewhere in <code>PARTS</code>. You can drive each output from a different part, just like earlier chips drove <code>out</code>:</p>
+      <pre><code>SomeChip(..., out=a);
+OtherChip(..., out=b);</code></pre>
+      <p>The important thing is that <code>a</code> and <code>b</code> are separate destinations. Each one needs its own signal.</p>
+    `,
     inputs: ['in', 'sel'],
     outputs: ['a', 'b'],
     skeleton: `CHIP DMux {
@@ -223,8 +232,10 @@ export const EXERCISES = [
       { in: 1, sel: 1, a: 0, b: 1 },
     ],
     hints: [
+      'This chip has two outputs. Your HDL should contain one connection that eventually drives a, and another that eventually drives b.',
+      'When sel = 0, a follows in and b is 0. When sel = 1, b follows in and a is 0.',
+      'Think of a and b as two separate gated paths from the same input.',
       'a = in \u2227 \u00ACsel, b = in \u2227 sel',
-      'Use And and Not gates for each output',
     ],
   },
 
