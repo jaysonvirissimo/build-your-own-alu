@@ -5,6 +5,7 @@ import { EXERCISES } from './exercises/definitions.js';
 import { loadProgress, getHighestUnlocked, clearProgress } from './ui/progress.js';
 import { createExerciseSection } from './ui/exercise.js';
 import { createTutorialSection } from './ui/tutorial.js';
+import { scrollToElementSlowly } from './ui/slow-scroll.js';
 
 const registry = new ChipRegistry();
 const progress = loadProgress();
@@ -157,6 +158,6 @@ function handleSolved(exerciseId) {
       () => nextSection.classList.remove('is-new'),
       { once: true }
     );
-    nextSection.scrollIntoView({ behavior: 'smooth' });
+    scrollToElementSlowly(nextSection);
   }
 }
