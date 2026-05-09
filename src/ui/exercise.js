@@ -7,7 +7,7 @@ import { createLiveDiagram } from './circuit-diagram.js';
 import { renderErrorPanel } from './error-panel.js';
 import { burstConfetti } from './confetti.js';
 
-export function createExerciseSection(exercise, index, registry, onSolved, vimEnabled) {
+export function createExerciseSection(exercise, index, registry, onSolved, vimEnabled, nextExerciseName) {
   const section = document.createElement('section');
   section.className = 'exercise';
   section.id = `exercise-${exercise.id}`;
@@ -222,7 +222,13 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
     saveExercise(exercise.id, code, allMatch);
 
     if (allMatch) {
-      successIndicator.textContent = 'Correct! ✓';
+      if (!wasAlreadySolved) {
+        successIndicator.textContent = nextExerciseName
+          ? `You added ${exercise.name} to your toolbox. Next: ${nextExerciseName}.`
+          : `You added ${exercise.name} to your toolbox.`;
+      } else {
+        successIndicator.textContent = 'Correct! ✓';
+      }
       successIndicator.classList.remove('playing');
       void successIndicator.offsetWidth;
       successIndicator.classList.add('playing');

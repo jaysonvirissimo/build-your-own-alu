@@ -119,12 +119,14 @@ function appendExercise(index) {
   const entry = progress.get(exercise.id);
 
   const builder = exercise.tutorial ? createTutorialSection : createExerciseSection;
+  const nextExerciseName = EXERCISES[index + 1]?.name ?? null;
   const { section, editor } = builder(
     exercise,
     index,
     registry,
     handleSolved,
-    vimEnabled
+    vimEnabled,
+    nextExerciseName
   );
 
   // Restore saved code
