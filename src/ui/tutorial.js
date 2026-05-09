@@ -70,7 +70,6 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
   section.appendChild(editorContainer);
 
   const editor = createEditor(editorContainer, exercise.tutorialSteps[0].code, registry, vimEnabled);
-  editor.setReadOnly(true);
 
   let debounceTimer = null;
   function scheduleDiagramUpdate() {
