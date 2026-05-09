@@ -375,3 +375,30 @@ describe('renderComparisonTable', () => {
     expect(mismatch.textContent).toBe('4660');
   });
 });
+
+describe('format listener does not leak across re-renders', () => {
+  it('repeated render cycles install only one document-level listener', () => {
+    for (let i = 0; i < 5; i++) {
+      renderComparisonTable(not16Exercise, [
+        { out: 0x5555 },
+        { out: 0x1234 },
+      ]);
+    }
+    const listeners = globalThis.document._listeners['byoa-format-change'] || [];
+    expect(listeners.length).toBe(1);
+  });
+
+  it('toggling format updates the latest comparison table after several runs', () => {
+    let wrapper;
+    for (let i = 0; i < 3; i++) {
+      wrapper = renderComparisonTable(not16Exercise, [
+        { out: 0x5555 },
+        { out: 0x1234 },
+      ]);
+    }
+    const hexBtn = wrapper.querySelectorAll('.format-toggle-btn').find((b) => b.textContent === 'hex');
+    hexBtn.click();
+    const mismatch = wrapper.querySelector('.mismatch');
+    expect(mismatch.textContent).toBe('0x1234');
+  });
+});

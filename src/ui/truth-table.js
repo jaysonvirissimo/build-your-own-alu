@@ -10,6 +10,40 @@ import {
 
 const FORMAT_CHANGE_EVENT = 'byoa-format-change';
 
+const wrapperRegistry = new Set();
+const wrapperExercise = new WeakMap();
+let installedDocument = null;
+
+function ensureGlobalFormatListener() {
+  if (installedDocument === document) return;
+  installedDocument = document;
+  wrapperRegistry.clear();
+  document.addEventListener(FORMAT_CHANGE_EVENT, handleGlobalFormatChange);
+}
+
+function handleGlobalFormatChange() {
+  for (const ref of wrapperRegistry) {
+    const wrapper = ref.deref();
+    if (!wrapper) {
+      wrapperRegistry.delete(ref);
+      continue;
+    }
+    refreshWrapper(wrapper);
+  }
+}
+
+function refreshWrapper(wrapper) {
+  const exercise = wrapperExercise.get(wrapper);
+  if (!exercise) return;
+  const fmt = currentFormatFor(exercise);
+  for (const btn of wrapper.querySelectorAll('.format-toggle-btn')) {
+    btn.classList.toggle('active', btn.dataset.format === fmt);
+  }
+  refreshValueCells(wrapper, exercise);
+  const legend = wrapper.querySelector('.nibble-legend');
+  if (legend) legend.hidden = fmt !== 'hex';
+}
+
 function getWidth(exercise, pinName) {
   return exercise.widths?.[pinName] ?? 1;
 }
@@ -42,15 +76,10 @@ function renderFormatToggle(wrapper, exercise) {
     buttons[fmt] = btn;
   }
 
-  const applyActive = (fmt) => {
-    for (const f of VALID_FORMATS) {
-      buttons[f].classList.toggle('active', f === fmt);
-    }
-  };
-  applyActive(currentFormatFor(exercise));
-
-  const onFormatChange = () => applyActive(currentFormatFor(exercise));
-  document.addEventListener(FORMAT_CHANGE_EVENT, onFormatChange);
+  const active = currentFormatFor(exercise);
+  for (const f of VALID_FORMATS) {
+    buttons[f].classList.toggle('active', f === active);
+  }
 
   wrapper.appendChild(toggle);
 }
@@ -104,12 +133,10 @@ function wrapTable(exercise, table) {
 
   if (hasMultiBitPin(exercise)) {
     renderFormatToggle(wrapper, exercise);
-    const legend = renderNibbleLegend(wrapper, exercise);
-    const onFormatChange = () => {
-      refreshValueCells(wrapper, exercise);
-      legend.hidden = currentFormatFor(exercise) !== 'hex';
-    };
-    document.addEventListener(FORMAT_CHANGE_EVENT, onFormatChange);
+    renderNibbleLegend(wrapper, exercise);
+    wrapperExercise.set(wrapper, exercise);
+    ensureGlobalFormatListener();
+    wrapperRegistry.add(new WeakRef(wrapper));
   }
 
   wrapper.appendChild(table);
