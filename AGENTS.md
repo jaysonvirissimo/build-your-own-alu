@@ -14,7 +14,7 @@ npx vitest run src/hdl/__tests__/parser.test.js  # Run a single test file
 
 ## Architecture
 
-Interactive web page where users implement Nand2Tetris HDL gates (NAND → ALU). Users write HDL in a CodeMirror editor, click Run, and the simulator verifies their implementation against an expected truth table. A circuit diagram is rendered on each run, and progressive hints guide stuck users.
+Interactive web page where users implement Nand2Tetris HDL gates (NAND → ALU). Users write HDL in a CodeMirror editor, click Run, and the simulator verifies their implementation against an expected truth table. A live circuit diagram updates beside the truth table as the user types (debounced) and re-renders synchronously on Run. Progressive hints guide stuck users.
 
 ### HDL Engine (`src/hdl/`)
 
@@ -26,9 +26,10 @@ Three-stage pipeline: **parse → resolve → simulate**.
 
 ### UI Layer (`src/ui/`)
 
-- `exercise.js` — Creates one exercise section: heading, spec table, editor, button row (Run / Reset / Hint), hint area, results area, success indicator. The Run handler chains: parse → render circuit diagram → simulate each truth table row → render comparison → on success, register chip and unlock next exercise.
-- `editor.js` — CodeMirror 6 wrapper with custom HDL syntax highlighting (`StreamLanguage`), chip autocomplete (queries `ChipRegistry` for available chips, inserts templates with pin names), and optional Vim keybindings (via `@replit/codemirror-vim`, toggled with a `Compartment`). Returns `{getCode, setCode, setReadOnly, toggleVim}`.
-- `truth-table.js` — `renderSpecTable()` shows expected truth table before Run. `renderComparisonTable()` shows merged inputs/expected/yours columns with match/mismatch CSS classes. `checkAllMatch()` validates results.
+- `exercise.js` — Creates one exercise section: heading, optional description/analogy, available-chips list, a side-by-side `topRow` with a spec table on the left and a live circuit-diagram pane on the right, editor, button row (Run / Reset / Hint), hint area, results area, success indicator. The diagram updates on a 250 ms debounce as the user types (via `editor.onDocChange`) and synchronously on Run. The Run handler chains: parse → diagram update → simulate each truth table row → render comparison → on success, register chip and unlock next exercise. On failure, a banner under the comparison table reports `❌ N of M test cases don't match` with an optional "Try a Hint?" CTA that scrolls/expands the hint area.
+- `tutorial.js` — Variant section builder used when an exercise has a `tutorial` flag. Renders step-driven tutorial copy with a "Walk me through it" button that auto-fills code step by step. The editor remains user-editable so learners can also complete tutorials manually.
+- `editor.js` — CodeMirror 6 wrapper with custom HDL syntax highlighting (`StreamLanguage`), chip autocomplete (queries `ChipRegistry` for available chips, inserts templates with pin names), and optional Vim keybindings (via `@replit/codemirror-vim`, toggled with a `Compartment`). Returns `{view, getCode, setCode, setReadOnly, toggleVim, onDocChange, highlightError, clearErrorHighlight}`. `onDocChange(fn)` registers doc-change callbacks (used by the live diagram); `highlightError(line)` / `clearErrorHighlight()` drive the inline error gutter for parser errors.
+- `truth-table.js` — `renderSpecTable()` shows expected truth table before Run. `renderComparisonTable()` shows merged inputs/expected/yours columns with match/mismatch CSS classes. `checkAllMatch()` / `countMismatches()` validate results. For multi-bit exercises, a dec/hex/bin format toggle is rendered above the table; toggling dispatches a document-level `byoa-format-change` event so all visible spec and comparison tables update in sync. Per-exercise `defaultFormat` (e.g., `'bin'` for `Not16`) controls the initial mode. Value formatting lives in `format-value.js`.
 - `progress.js` — localStorage persistence under key `byoa-solutions`. Stores `{code, solved}` per exercise. `getHighestUnlocked()` returns the index of the first unsolved exercise for progressive disclosure. `clearProgress()` resets all saved data.
 - `circuit-diagram.js` — `createLiveDiagram()` returns `{container, update(chipDef, registry), showPlaceholder(msg)}`. `update()` calls `chipDefToNetlist()` to convert the AST, hands it to `netlistsvg.render()` (which uses ELK for layered layout + orthogonal edge routing), then parses the resulting SVG with `DOMParser` and inserts it via `replaceChildren`. A render-token counter drops out-of-order async results so a fast typist doesn't see flicker.
 - `netlist-converter.js` — Pure `chipDefToNetlist(chipDef, registry) → Yosys netlist JSON`. Assigns each named wire an integer bit-ID range (0/1 reserved for constants, `'x'` for undriven pin slots), maps known HDL primitives (`Nand`, `Not`, `And`, `Or`, `Xor`, `Nor`, `Mux`) to their Yosys gate types with pin renaming (`a/b/out` → `A/B/Y`), and falls back to user-defined chip names as generic boxes. Collapses chips with > `COLLAPSE_THRESHOLD` (10) parts into a single labeled black-box cell.
@@ -41,7 +42,7 @@ Three-stage pipeline: **parse → resolve → simulate**.
 
 ### Exercise Definitions (`src/exercises/definitions.js`)
 
-Array of 20 exercise objects with `{id, name, chapter, inputs, outputs, skeleton, truthTable, hints}` covering all gates from Not through ALU. Single-bit exercises have full truth tables; multi-bit exercises use representative subsets with decimal integer values. Each exercise has hand-authored progressive hints using conventional Boolean algebra notation (¬, ∧, ∨, ⊕).
+Array of 23 exercise objects with `{id, name, chapter, inputs, outputs, skeleton, truthTable, hints, defaultFormat?, description?, analogy?, tutorial?, tutorialSteps?}` covering all gates from Not through ALU. Single-bit exercises have full truth tables; multi-bit exercises use representative subsets, with values displayed in the format chosen by the dec/hex/bin toggle (initial mode set by `defaultFormat`). Each exercise has hand-authored progressive hints using conventional Boolean algebra notation (¬, ∧, ∨, ⊕). Tutorial exercises set `tutorial: true` and provide `tutorialSteps` for the "Walk me through it" flow.
 
 ## Deployment
 

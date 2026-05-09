@@ -21,7 +21,7 @@ Each gate you solve becomes available as a building block for the next.
 
 - **In-browser HDL editor** with syntax highlighting and chip autocomplete (powered by CodeMirror 6)
 - **Instant verification** against truth tables with side-by-side comparison
-- **Circuit diagram** rendered as SVG with conventional gate shapes after each run
+- **Live circuit diagram** rendered as SVG with conventional gate shapes -- updates as you type and on each run
 - **Progressive hints** using Boolean algebra notation for when you're stuck
 - **Guided walkthroughs** on select exercises that step you through a solution with inline explanations
 - **Progress saved** in localStorage -- pick up where you left off
