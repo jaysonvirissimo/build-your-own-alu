@@ -20,6 +20,7 @@ export const EXERCISES = [
       { in: 1, out: 0 },
     ],
     hints: [
+      'Flip the bit: a 0 in should become a 1 out, and the other way around. You only have NAND \u2014 can you trick it into seeing the same input twice?',
       'out = \u00ACin',
       'NAND(x, x) = \u00ACx \u2014 a NAND gate with both inputs tied together acts as NOT',
     ],
@@ -70,6 +71,7 @@ export const EXERCISES = [
       { a: 1, b: 1, out: 1 },
     ],
     hints: [
+      'And outputs 1 only when both inputs are 1. NAND outputs 0 in exactly that case \u2014 what could you do to a NAND output to turn it into And?',
       'out = a \u2227 b',
       'a \u2227 b = \u00AC(a NAND b) \u2014 negate the NAND of a and b',
     ],
@@ -96,6 +98,7 @@ export const EXERCISES = [
       { a: 1, b: 1, out: 1 },
     ],
     hints: [
+      'Or is 1 whenever at least one input is 1. The only time Or is 0 is when both inputs are 0 \u2014 does that suggest negating the inputs first?',
       'out = a \u2228 b',
       'By De Morgan\u2019s law: a \u2228 b = \u00AC(\u00ACa \u2227 \u00ACb)',
       'a \u2228 b = NAND(\u00ACa, \u00ACb) \u2014 negate each input, then NAND them',
@@ -123,6 +126,7 @@ export const EXERCISES = [
       { a: 1, b: 1, out: 0 },
     ],
     hints: [
+      'Xor is 1 when exactly one input is 1, but not both. Try writing out the four input combinations and circling which rows should output 1.',
       'out = a \u2295 b',
       'a \u2295 b = (a \u2227 \u00ACb) \u2228 (\u00ACa \u2227 b)',
       'You can build this from And, Or, and Not gates',
@@ -311,6 +315,7 @@ Not(in=in[15], out=out[15]);</code></pre>
       { a: 0x1234, b: 0x5678, out: 0x1230 },
     ],
     hints: [
+      'And16 is just sixteen And gates running side by side. Each output bit only depends on the matching pair of input bits.',
       'Apply the single-bit operation to each pair of bits independently',
       'out[i] = a[i] \u2227 b[i] for each bit i from 0 to 15',
     ],
@@ -340,6 +345,7 @@ Not(in=in[15], out=out[15]);</code></pre>
       { a: 0x1234, b: 0x5678, out: 0x567C },
     ],
     hints: [
+      'Or16 is just sixteen Or gates running side by side. Each output bit only depends on the matching pair of input bits.',
       'Apply the single-bit operation to each pair of bits independently',
       'out[i] = a[i] \u2228 b[i] for each bit i from 0 to 15',
     ],
@@ -369,6 +375,7 @@ Not(in=in[15], out=out[15]);</code></pre>
       { a: 0x1234, b: 0x5678, sel: 1, out: 0x5678 },
     ],
     hints: [
+      'Mux16 is sixteen single-bit Mux chips stacked, all sharing the same sel — sel picks a or b for every bit at once.',
       'Apply the single-bit Mux to each bit independently',
       'out[i] = Mux(a[i], b[i], sel) for each bit i from 0 to 15',
     ],
@@ -397,6 +404,7 @@ Not(in=in[15], out=out[15]);</code></pre>
       { in: 0x10, out: 1 },
     ],
     hints: [
+      'You want a single 1 out if any of the eight bits is 1. Can you check the bits in pairs first, then combine the pair-results?',
       'out = in[0] \u2228 in[1] \u2228 ... \u2228 in[7]',
       'Build a tree: OR pairs together, then OR the results',
     ],
@@ -543,6 +551,7 @@ Not(in=in[15], out=out[15]);</code></pre>
       { a: 1, b: 1, sum: 0, carry: 1 },
     ],
     hints: [
+      'Adding two single bits gives a sum bit and a carry bit. Which gate already matches "1 only when both are 1"? Which one matches "1 when exactly one is 1"?',
       'sum = a \u2295 b, carry = a \u2227 b',
       'XOR gives the sum bit, AND gives the carry bit',
     ],
@@ -573,6 +582,7 @@ Not(in=in[15], out=out[15]);</code></pre>
       { a: 1, b: 1, c: 1, sum: 1, carry: 1 },
     ],
     hints: [
+      'A FullAdder adds three bits (a, b, c) and produces a sum and a carry. You already built HalfAdder for two bits \u2014 can you reuse it twice and combine the carries?',
       'sum = a \u2295 b \u2295 c',
       'Use two HalfAdders: first add a and b, then add that sum with c',
       'carry = carry\u2081 \u2228 carry\u2082 \u2014 OR the two carry outputs together',
