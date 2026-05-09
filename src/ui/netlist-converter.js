@@ -16,7 +16,7 @@ const COLLAPSE_THRESHOLD = 10;
 // Maps known HDL chip names to Yosys gate primitives. Cells of these types
 // render with conventional schematic symbols from netlistsvg's default skin.
 // Pin-name mapping converts our HDL pin names to the symbol's expected pids.
-const PRIMITIVE_MAP = {
+export const PRIMITIVE_MAP = {
   Nand: { type: '$_NAND_', pinMap: { a: 'A', b: 'B', out: 'Y' } },
   And:  { type: '$_AND_',  pinMap: { a: 'A', b: 'B', out: 'Y' } },
   Or:   { type: '$_OR_',   pinMap: { a: 'A', b: 'B', out: 'Y' } },

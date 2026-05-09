@@ -1,4 +1,5 @@
 import { chipDefToNetlist } from './netlist-converter.js';
+import { chipNameFromCellId, getChipTooltip } from './chip-tooltips.js';
 
 // netlistsvg + ELK weigh ~600 KB gzipped — defer them until the first render
 // is actually requested, and reuse the loaded modules for subsequent calls.
@@ -82,6 +83,20 @@ function parseAndScale(svgString) {
     svg.setAttribute('width', String(w * RENDER_SCALE));
     svg.setAttribute('height', String(h * RENDER_SCALE));
   }
+  addPrimitiveTooltips(svg);
   // Adopt into the host document so the element belongs to our DOM.
   return document.importNode(svg, true);
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function addPrimitiveTooltips(svg) {
+  for (const cell of svg.querySelectorAll('g[id^="cell_"]')) {
+    if (cell.firstElementChild?.tagName === 'title') continue;
+    const tip = getChipTooltip(chipNameFromCellId(cell.getAttribute('id')));
+    if (!tip) continue;
+    const title = svg.ownerDocument.createElementNS(SVG_NS, 'title');
+    title.textContent = tip;
+    cell.insertBefore(title, cell.firstChild);
+  }
 }
