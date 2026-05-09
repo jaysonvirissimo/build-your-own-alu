@@ -1,5 +1,6 @@
 import { createEditor } from './editor.js';
 import { renderSpecTable, renderComparisonTable, checkAllMatch, countMismatches } from './truth-table.js';
+import { diagnoseFailure } from './failure-diagnosis.js';
 import { parseHDL } from '../hdl/parser.js';
 import { simulate } from '../hdl/simulator.js';
 import { saveExercise, loadProgress } from './progress.js';
@@ -215,6 +216,14 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
           walkthroughBtn.click();
         });
         banner.appendChild(cta);
+      }
+
+      const diagnosis = diagnoseFailure(exercise, userOutputs);
+      if (diagnosis) {
+        const line = document.createElement('p');
+        line.className = 'failure-diagnosis';
+        line.textContent = diagnosis;
+        banner.appendChild(line);
       }
 
       resultsArea.insertBefore(banner, comparisonTable);

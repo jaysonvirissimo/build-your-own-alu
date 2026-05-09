@@ -417,6 +417,11 @@ header p {
 .failure-banner__cta:hover {
   color: #800;
 }
+.failure-diagnosis {
+  margin: 0.4em 0 0;
+  font-weight: 400;
+  font-style: italic;
+}
 
 /* Success indicator */
 @keyframes success-pop {
