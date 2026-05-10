@@ -1,5 +1,6 @@
 import { EditorView, basicSetup } from 'codemirror';
-import { EditorState, Compartment } from '@codemirror/state';
+import { keymap } from '@codemirror/view';
+import { EditorState, Compartment, Prec } from '@codemirror/state';
 import { StreamLanguage } from '@codemirror/language';
 import { autocompletion } from '@codemirror/autocomplete';
 import { vim } from '@replit/codemirror-vim';
@@ -59,12 +60,17 @@ function chipCompletions(registry) {
   };
 }
 
-export function createEditor(container, initialDoc, registry, vimEnabled) {
+export function createEditor(container, initialDoc, registry, vimEnabled, onRun) {
   const vimCompartment = new Compartment();
   const readOnlyCompartment = new Compartment();
   const docChangeHandlers = [];
 
   const extensions = [
+    Prec.highest(keymap.of([{
+      key: 'Mod-Enter',
+      preventDefault: true,
+      run: () => { onRun?.(); return true; },
+    }])),
     vimCompartment.of(vimEnabled ? vim() : []),
     readOnlyCompartment.of(EditorState.readOnly.of(false)),
     basicSetup,
@@ -89,6 +95,9 @@ export function createEditor(container, initialDoc, registry, vimEnabled) {
 
   return {
     view,
+    focus() {
+      view.focus();
+    },
     getCode() {
       return view.state.doc.toString();
     },

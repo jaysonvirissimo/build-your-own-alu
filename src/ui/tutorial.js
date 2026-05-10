@@ -70,7 +70,8 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
   editorContainer.className = 'editor-container';
   section.appendChild(editorContainer);
 
-  const editor = createEditor(editorContainer, exercise.tutorialSteps[0].code, registry, vimEnabled);
+  let runHandler;
+  const editor = createEditor(editorContainer, exercise.tutorialSteps[0].code, registry, vimEnabled, () => runHandler?.());
 
   let debounceTimer = null;
   function scheduleDiagramUpdate() {
@@ -146,7 +147,7 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
   });
 
   // Run
-  runBtn.addEventListener('click', () => {
+  runHandler = () => {
     resultsArea.innerHTML = '';
     successIndicator.style.display = 'none';
     editor.clearErrorHighlight();
@@ -248,7 +249,8 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
       registry.register(exercise.name, chipDef);
       onSolved(exercise.id, chipDef, code);
     }
-  });
+  };
+  runBtn.addEventListener('click', runHandler);
 
   // Reset
   resetExBtn.addEventListener('click', () => {

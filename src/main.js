@@ -200,5 +200,6 @@ function handleSolved(exerciseId) {
       { once: true }
     );
     scrollToElementSlowly(nextSection);
+    exerciseSections[nextIndex].editor.focus();
   }
 }
