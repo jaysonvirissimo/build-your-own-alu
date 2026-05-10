@@ -467,6 +467,70 @@ describe('simulate', () => {
     expect(err.line).toBeNull();
   });
 
+  it('errors when an output bus is only partially driven', () => {
+    const registry = new ChipRegistry();
+    // Drives only out[0]; out[1..15] are never assigned.
+    const def = parseHDL(`
+      CHIP PartialOut {
+        IN in;
+        OUT out[16];
+        PARTS:
+        Nand(a=in, b=in, out=out[0]);
+      }
+    `);
+    const err = captureThrown(() => simulate(def, { in: 0 }, registry));
+    expect(err).toBeInstanceOf(SimError);
+    expect(err.kind).toBe('output-unassigned');
+    expect(err.message).toContain("'out'");
+    expect(err.message).toMatch(/bits 1\.\.15/);
+  });
+
+  it('errors when a part reads a bit that is never driven', () => {
+    const registry = new ChipRegistry();
+    // First part drives only w[0]; second part tries to read w[1].
+    const def = parseHDL(`
+      CHIP UndrivenBitRead {
+        IN in;
+        OUT out;
+        PARTS:
+        Nand(a=in, b=in, out=w[0]);
+        Nand(a=w[1], b=w[1], out=out);
+      }
+    `);
+    const err = captureThrown(() => simulate(def, { in: 0 }, registry));
+    expect(err).toBeInstanceOf(SimError);
+    expect(err.kind).toBe('unresolved');
+    expect(err.message).toMatch(/w\[1\]/);
+  });
+
+  it('errors when a part reads the whole bus but only some bits are driven', () => {
+    const registry = new ChipRegistry();
+    const not16Like = parseHDL(`
+      CHIP Pass16 { IN in[16]; OUT out[16]; PARTS:
+        Nand(a=in[0], b=in[0], out=t1[0]);
+        Nand(a=t1[0], b=t1[0], out=out[0]);
+      }
+    `);
+    // Pass16 only drives out[0], but the consumer below reads the whole 16-bit bus.
+    // Even though Pass16 itself would error first (on partial output), wrap in
+    // a chip that surfaces "consumer reads whole bus": drive only w[0..7], then
+    // read whole w as a 16-bit input.
+    registry.register('Not', parseHDL('CHIP Not { IN in; OUT out; PARTS: Nand(a=in, b=in, out=out); }'));
+    const def = parseHDL(`
+      CHIP HalfDrivenBus {
+        IN in[16];
+        OUT out[16];
+        PARTS:
+        Not(in=in[0], out=w[0]);
+        Not(in=w[5], out=out[0]);
+      }
+    `);
+    const err = captureThrown(() => simulate(def, { in: 0 }, registry));
+    expect(err).toBeInstanceOf(SimError);
+    expect(err.kind).toBe('unresolved');
+    expect(err.message).toMatch(/w/);
+  });
+
   it('simulates Add16 from HalfAdder and FullAdders with carry chain', () => {
     const registry = new ChipRegistry();
     // Register prerequisite chips

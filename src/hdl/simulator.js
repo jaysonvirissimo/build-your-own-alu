@@ -26,42 +26,49 @@ export function simulate(chipDef, inputs, registry) {
     }
   }
 
-  // Infer internal wire widths from output connections
+  // Infer internal wire widths from connections.
+  // Output writes set a lower bound on the wire's width; input reads with
+  // explicit bus indices also imply a minimum width (wire must contain the
+  // bit being read). Both are needed so diagnostics can name unresolved bits.
+  const bumpWidth = (name, width) => {
+    const existing = wireWidths.get(name);
+    if (existing === undefined || width > existing) {
+      wireWidths.set(name, width);
+    }
+  };
   for (const part of chipDef.parts) {
     const subChip = registry.get(part.chipName);
     const subOutputMap = new Map(subChip.outputs.map((p) => [p.name, p]));
+    const subInputMap = new Map(subChip.inputs.map((p) => [p.name, p]));
     for (const conn of part.connections) {
       if (conn.isConstant) continue;
-      const subOut = subOutputMap.get(conn.subPin);
-      if (!subOut) continue; // input connection, skip
 
-      let width;
-      if (conn.wireBus !== null) {
-        if ('index' in conn.wireBus) {
-          // Writing a single bit — wire must be at least index+1 wide
-          width = conn.wireBus.index + 1;
-        } else {
-          width = conn.wireBus.end + 1;
-        }
-      } else {
-        // Whole connection — wire width matches what's being written
-        if (conn.subBus !== null) {
+      const subOut = subOutputMap.get(conn.subPin);
+      if (subOut) {
+        let width;
+        if (conn.wireBus !== null) {
+          width = 'index' in conn.wireBus ? conn.wireBus.index + 1 : conn.wireBus.end + 1;
+        } else if (conn.subBus !== null) {
           width = 'index' in conn.subBus ? 1 : conn.subBus.end - conn.subBus.start + 1;
         } else {
           width = subOut.width;
         }
+        bumpWidth(conn.wire, width);
+        continue;
       }
 
-      const existing = wireWidths.get(conn.wire);
-      if (existing === undefined || width > existing) {
-        wireWidths.set(conn.wire, width);
+      const subIn = subInputMap.get(conn.subPin);
+      if (subIn && conn.wireBus !== null) {
+        const width = 'index' in conn.wireBus ? conn.wireBus.index + 1 : conn.wireBus.end + 1;
+        bumpWidth(conn.wire, width);
       }
     }
   }
 
-  // Build wire map: input wires from inputs, everything else starts at 0
+  // Build wire map: input wires from inputs, everything else starts at 0.
+  // wireReadyBits tracks which bit indices of each wire have been driven.
   const wires = new Map();
-  const wireReady = new Map(); // tracks whether a wire has been driven
+  const wireReadyBits = new Map();
 
   for (const pin of chipDef.inputs) {
     if (!(pin.name in inputs)) {
@@ -71,7 +78,9 @@ export function simulate(chipDef, inputs, registry) {
       );
     }
     wires.set(pin.name, inputs[pin.name]);
-    wireReady.set(pin.name, true);
+    const ready = new Set();
+    for (let b = 0; b < pin.width; b++) ready.add(b);
+    wireReadyBits.set(pin.name, ready);
   }
 
   // Initialize all other wires to 0 (bits will be OR-ed in)
@@ -80,7 +89,7 @@ export function simulate(chipDef, inputs, registry) {
       if (conn.isConstant) continue;
       if (!wires.has(conn.wire)) {
         wires.set(conn.wire, 0);
-        wireReady.set(conn.wire, false);
+        wireReadyBits.set(conn.wire, new Set());
       }
     }
   }
@@ -133,7 +142,7 @@ export function simulate(chipDef, inputs, registry) {
       for (const conn of part.connections) {
         if (!subInputMap.has(conn.subPin)) continue; // output connection
 
-        const val = readWireValue(conn, wires, wireReady, subInputMap.get(conn.subPin));
+        const val = readWireValue(conn, wires, wireReadyBits, subInputMap.get(conn.subPin));
         if (val === undefined) {
           ready = false;
           break;
@@ -165,7 +174,8 @@ export function simulate(chipDef, inputs, registry) {
 
       // Write outputs to wires
       for (const conn of part.connections) {
-        if (!subOutputMap.has(conn.subPin)) continue; // input connection
+        const subOut = subOutputMap.get(conn.subPin);
+        if (!subOut) continue; // input connection
 
         let value = subOutputs[conn.subPin];
 
@@ -191,7 +201,11 @@ export function simulate(chipDef, inputs, registry) {
           const current = wires.get(conn.wire) || 0;
           wires.set(conn.wire, current | (value << conn.wireBus.start));
         }
-        wireReady.set(conn.wire, true);
+
+        // Mark only the bits this connection actually wrote as ready.
+        const writtenBits = getTargetBits(conn, subOut);
+        const readySet = wireReadyBits.get(conn.wire);
+        for (const b of writtenBits) readySet.add(b);
       }
 
       simulated[i] = true;
@@ -202,9 +216,7 @@ export function simulate(chipDef, inputs, registry) {
     if (!progress) {
       const stuckParts = chipDef.parts.filter((_, i) => !simulated[i]);
       const stuck = stuckParts.map((p) => p.chipName);
-      const unresolvedWires = [...wireReady.entries()]
-        .filter(([, v]) => !v)
-        .map(([k]) => k);
+      const unresolvedWires = describeUnreadyWires(wireReadyBits, wireWidths);
       const firstStuck = stuckParts[0];
       throw new SimError(
         `Could not resolve all parts in chip '${chipDef.name}'. ` +
@@ -219,22 +231,29 @@ export function simulate(chipDef, inputs, registry) {
     }
   }
 
-  // Collect outputs
+  // Collect outputs — every declared output bit must have been driven
   const result = {};
   for (const pin of chipDef.outputs) {
-    const val = wires.get(pin.name);
-    if (val === undefined) {
+    const readySet = wireReadyBits.get(pin.name);
+    const missing = [];
+    for (let b = 0; b < pin.width; b++) {
+      if (!readySet || !readySet.has(b)) missing.push(b);
+    }
+    if (missing.length) {
+      const detail = pin.width === 1
+        ? ''
+        : ` (bit${missing.length === 1 ? '' : 's'} ${formatBitList(missing)})`;
       throw new SimError(
-        `Output '${pin.name}' was never assigned in chip '${chipDef.name}'`,
+        `Output '${pin.name}' was never assigned${detail} in chip '${chipDef.name}'`,
         { kind: 'output-unassigned' }
       );
     }
-    result[pin.name] = val;
+    result[pin.name] = wires.get(pin.name);
   }
   return result;
 }
 
-function readWireValue(conn, wires, wireReady, subPin) {
+function readWireValue(conn, wires, wireReadyBits, subPin) {
   // Constants are always ready
   if (conn.isConstant) {
     let width;
@@ -250,8 +269,13 @@ function readWireValue(conn, wires, wireReady, subPin) {
     return conn.wire === 'true' ? (1 << width) - 1 : 0;
   }
 
-  // Check if wire is ready
-  if (!wireReady.get(conn.wire)) return undefined;
+  // Every bit being read from the wire must be in the ready set
+  const readBits = getReadBits(conn, subPin);
+  const readySet = wireReadyBits.get(conn.wire);
+  if (!readySet) return undefined;
+  for (const bit of readBits) {
+    if (!readySet.has(bit)) return undefined;
+  }
 
   const fullValue = wires.get(conn.wire);
 
@@ -290,4 +314,54 @@ function getTargetBits(conn, subOutPin) {
   // Range
   const { start, end } = conn.wireBus;
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+
+// Mirror of getTargetBits for read connections. Returns the wire-side bit
+// indices that this connection sources from `conn.wire`.
+function getReadBits(conn, subPin) {
+  if (conn.wireBus === null) {
+    let width;
+    if (conn.subBus !== null) {
+      width = 'index' in conn.subBus ? 1 : conn.subBus.end - conn.subBus.start + 1;
+    } else {
+      width = subPin.width;
+    }
+    return Array.from({ length: width }, (_, i) => i);
+  }
+  if ('index' in conn.wireBus) {
+    return [conn.wireBus.index];
+  }
+  const { start, end } = conn.wireBus;
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+
+function describeUnreadyWires(wireReadyBits, wireWidths) {
+  const out = [];
+  for (const [name, readySet] of wireReadyBits) {
+    const width = wireWidths.get(name) ?? 1;
+    if (readySet.size >= width) continue;
+    if (width === 1) {
+      out.push(name);
+      continue;
+    }
+    const missing = [];
+    for (let b = 0; b < width; b++) {
+      if (!readySet.has(b)) missing.push(b);
+    }
+    out.push(`${name}[${formatBitList(missing)}]`);
+  }
+  return out;
+}
+
+function formatBitList(bits) {
+  // Collapse contiguous runs into "a..b".
+  const parts = [];
+  let i = 0;
+  while (i < bits.length) {
+    let j = i;
+    while (j + 1 < bits.length && bits[j + 1] === bits[j] + 1) j++;
+    parts.push(i === j ? String(bits[i]) : `${bits[i]}..${bits[j]}`);
+    i = j + 1;
+  }
+  return parts.join(',');
 }
