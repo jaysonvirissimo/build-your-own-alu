@@ -18,5 +18,26 @@ export default defineConfig({
       'webworker-threads': path.resolve(projectRoot, 'build-shims/empty-stub.js'),
     },
   },
+  build: {
+    // The circuit-diagram renderer (netlistsvg + elkjs's full ELK layout
+    // engine) is intrinsically heavy (~1.5 MB minified). It is dynamically
+    // imported from src/ui/circuit-diagram.js, so it never loads on initial
+    // page paint — only when the user types HDL that parses cleanly. We pin
+    // it to a stably-named `diagram-renderer` chunk so its content hash is
+    // tied to those libraries rather than to app-side churn (better cache
+    // hit-rate for returning visitors), and raise the chunk-size warning
+    // threshold above its expected size so the warning still fires if the
+    // chunk grows unexpectedly.
+    chunkSizeWarningLimit: 1700,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/netlistsvg')) return 'diagram-renderer';
+          if (id.includes('node_modules/elkjs')) return 'diagram-renderer';
+          if (id.includes('netlist-skin.svg')) return 'diagram-renderer';
+        },
+      },
+    },
+  },
   test: {},
 });
