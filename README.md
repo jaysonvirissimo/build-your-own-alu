@@ -19,9 +19,10 @@ Each gate you solve becomes available as a building block for the next.
 
 ## Features
 
-- **In-browser HDL editor** with syntax highlighting and chip autocomplete (powered by CodeMirror 6)
-- **Instant verification** against truth tables with side-by-side comparison
+- **In-browser HDL editor** with syntax highlighting, chip autocomplete, and inline error highlighting for parser errors (powered by CodeMirror 6)
+- **Instant verification** against truth tables with side-by-side comparison; multi-bit values toggle between decimal, hex, and binary, and a failure banner reports how many cases mismatched with a quick path into hints
 - **Live circuit diagram** rendered as SVG with conventional gate shapes -- updates as you type and on each run
+- **Plain-English explanations** and real-world analogies on every exercise so each gate is an idea to build, not just a table to match
 - **Progressive hints** using Boolean algebra notation for when you're stuck
 - **Guided walkthroughs** on select exercises that step you through a solution with inline explanations
 - **Progress saved** in localStorage -- pick up where you left off
