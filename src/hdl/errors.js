@@ -16,3 +16,13 @@ export class SimError extends Error {
     this.kind = kind;
   }
 }
+
+export class ValidationError extends Error {
+  constructor(message, { line = null, col = null, kind = 'validation' } = {}) {
+    super(message);
+    this.name = 'ValidationError';
+    this.line = line;
+    this.col = col;
+    this.kind = kind;
+  }
+}

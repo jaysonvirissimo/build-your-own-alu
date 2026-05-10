@@ -1,8 +1,11 @@
-import { ParseError, SimError } from '../hdl/errors.js';
+import { ParseError, SimError, ValidationError } from '../hdl/errors.js';
 
 function categorize(err) {
   if (err instanceof ParseError) {
     return { label: 'Parser error', variant: 'parser' };
+  }
+  if (err instanceof ValidationError) {
+    return { label: 'Validation error', variant: 'validation' };
   }
   if (err instanceof SimError) {
     if (err.kind === 'chip-missing') {
@@ -17,6 +20,26 @@ function categorize(err) {
 }
 
 function suggestionFor(err) {
+  if (err instanceof ValidationError) {
+    switch (err.kind) {
+      case 'duplicate-pin':
+        return 'Each pin name in `IN` and `OUT` must be unique within a chip. Rename one so each wire has a single declaration.';
+      case 'bad-pin-width':
+        return 'Bus widths must be at least 1 bit. Bus ranges go low-to-high — write `x[0..7]`, not `x[7..0]`.';
+      case 'unknown-sub-pin':
+        return 'That pin name doesn\'t exist on the chip you\'re calling. Check the chip\'s `IN`/`OUT` line — sub-pin names are case-sensitive.';
+      case 'missing-sub-input':
+        return 'Every input pin on a sub-chip must be wired. Did you forget one of the `pin=wire` connections?';
+      case 'duplicate-sub-connection':
+        return 'Two connections are writing to the same sub-pin bit. Each input bit on a sub-chip can only be wired once.';
+      case 'reversed-bus-range':
+        return 'Bus ranges go low-to-high: write `x[0..7]` (eight bits, low to high), not `x[7..0]`.';
+      case 'out-of-bounds-bus':
+        return 'That bit index is past the end of the pin. Check the pin\'s width — for an 8-bit pin, valid indices are 0 through 7.';
+      default:
+        return null;
+    }
+  }
   if (err instanceof SimError) {
     switch (err.kind) {
       case 'output-unassigned': {

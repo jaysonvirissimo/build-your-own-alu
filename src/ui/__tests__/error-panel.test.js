@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { ParseError, SimError } from '../../hdl/errors.js';
+import { ParseError, SimError, ValidationError } from '../../hdl/errors.js';
 import { renderErrorPanel } from '../error-panel.js';
 
 class FakeElement {
@@ -237,6 +237,57 @@ describe('renderErrorPanel', () => {
     const editorApi = { highlightError: (n) => { receivedLine = n; } };
     renderErrorPanel(container, err, editorApi);
     expect(receivedLine).toBeNull();
+  });
+
+  it('categorizes ValidationError as "Validation error"', () => {
+    const container = new FakeElement('div');
+    const err = new ValidationError("Chip 'Nand' has no pin named 'c'.", { line: 5, col: 3, kind: 'unknown-sub-pin' });
+    renderErrorPanel(container, err, null);
+    const panel = container.querySelector('.error-panel');
+    expect(panel.className).toContain('error-panel--validation');
+    expect(panel.querySelector('.error-panel__badge').textContent).toBe('Validation error');
+  });
+
+  it('suggests checking pin uniqueness for duplicate-pin', () => {
+    const container = new FakeElement('div');
+    renderErrorPanel(container, new ValidationError('Pin x is declared more than once', { kind: 'duplicate-pin' }), null);
+    expect(container.querySelector('.error-panel__suggestion').textContent).toMatch(/unique within a chip/i);
+  });
+
+  it('suggests low-to-high ranges for bad-pin-width', () => {
+    const container = new FakeElement('div');
+    renderErrorPanel(container, new ValidationError('Pin x has width 0', { kind: 'bad-pin-width' }), null);
+    expect(container.querySelector('.error-panel__suggestion').textContent).toMatch(/low-to-high/);
+  });
+
+  it('suggests checking sub-pin spelling for unknown-sub-pin', () => {
+    const container = new FakeElement('div');
+    renderErrorPanel(container, new ValidationError("no pin named 'c'", { kind: 'unknown-sub-pin' }), null);
+    expect(container.querySelector('.error-panel__suggestion').textContent).toMatch(/case-sensitive/);
+  });
+
+  it('suggests wiring every input for missing-sub-input', () => {
+    const container = new FakeElement('div');
+    renderErrorPanel(container, new ValidationError("'b' is not connected", { kind: 'missing-sub-input' }), null);
+    expect(container.querySelector('.error-panel__suggestion').textContent).toMatch(/Every input pin/i);
+  });
+
+  it('suggests one connection per bit for duplicate-sub-connection', () => {
+    const container = new FakeElement('div');
+    renderErrorPanel(container, new ValidationError("'a' is wired more than once", { kind: 'duplicate-sub-connection' }), null);
+    expect(container.querySelector('.error-panel__suggestion').textContent).toMatch(/only be wired once/);
+  });
+
+  it('suggests low-to-high ranges for reversed-bus-range', () => {
+    const container = new FakeElement('div');
+    renderErrorPanel(container, new ValidationError('range [3..0] is reversed', { kind: 'reversed-bus-range' }), null);
+    expect(container.querySelector('.error-panel__suggestion').textContent).toMatch(/low-to-high/);
+  });
+
+  it('suggests checking bit width for out-of-bounds-bus', () => {
+    const container = new FakeElement('div');
+    renderErrorPanel(container, new ValidationError('Bit 8 is out of bounds', { kind: 'out-of-bounds-bus' }), null);
+    expect(container.querySelector('.error-panel__suggestion').textContent).toMatch(/0 through 7/);
   });
 
   it('preserves raw message under a <details> block', () => {

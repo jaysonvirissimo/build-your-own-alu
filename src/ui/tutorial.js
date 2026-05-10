@@ -2,6 +2,7 @@ import { createEditor } from './editor.js';
 import { renderSpecTable, renderComparisonTable, checkAllMatch, countMismatches } from './truth-table.js';
 import { diagnoseFailure } from './failure-diagnosis.js';
 import { parseHDL } from '../hdl/parser.js';
+import { validateChip } from '../hdl/validator.js';
 import { simulate } from '../hdl/simulator.js';
 import { saveExercise, loadProgress } from './progress.js';
 import { createLiveDiagram } from './circuit-diagram.js';
@@ -176,6 +177,14 @@ export function createTutorialSection(exercise, index, registry, onSolved, vimEn
     // Sync live diagram with what we just parsed (Run may have preempted the debounce)
     if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
     try { diagram.update(chipDef, registry); } catch { /* keep last good */ }
+
+    try {
+      validateChip(chipDef, registry);
+    } catch (err) {
+      renderErrorPanel(resultsArea, err, editor);
+      saveExercise(exercise.id, code, false);
+      return;
+    }
 
     const userOutputs = [];
     for (const row of exercise.truthTable) {

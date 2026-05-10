@@ -51,6 +51,20 @@ test('incorrect solution shows the failure banner', async ({ page }) => {
   await expect(page.locator('#exercise-not .failure-banner')).toContainText(/test case.*don't match/);
 });
 
+test('semantic validation surfaces a friendly error for a typo in a sub-pin name', async ({ page }) => {
+  const broken = `CHIP Not {
+    IN in;
+    OUT out;
+    PARTS:
+    Nand(c=in, b=in, out=out);
+}`;
+  await seedProgress(page, { not: { code: broken, solved: false } });
+  await page.goto('/');
+  await page.locator('#exercise-not .run-btn').click();
+  await expect(page.locator('#exercise-not .error-panel--validation')).toBeVisible();
+  await expect(page.locator('#exercise-not .error-panel__suggestion')).toContainText(/case-sensitive/i);
+});
+
 test('format toggle switches dec/hex/bin on a multi-bit exercise', async ({ page }) => {
   // Seed all 6 prerequisites for Not16 as solved so it renders.
   const seed = {};

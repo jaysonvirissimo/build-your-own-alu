@@ -519,6 +519,10 @@ pre.error {
   background: #8a1c8a;
 }
 
+.error-panel--validation .error-panel__badge {
+  background: #1d6f8c;
+}
+
 .error-panel__location {
   color: #6a1a1a;
   font-size: 13px;
