@@ -45,4 +45,23 @@ describe('ChipRegistry', () => {
     registry.register('Not', { name: 'Not' });
     expect(registry.getAvailableNames()).toEqual(['Nand', 'Not']);
   });
+
+  it('reset() drops user-registered chips and keeps Nand', () => {
+    const registry = new ChipRegistry();
+    registry.register('Not', { name: 'Not' });
+    registry.register('And', { name: 'And' });
+    registry.reset();
+    expect(registry.has('Not')).toBe(false);
+    expect(registry.has('And')).toBe(false);
+    expect(registry.has('Nand')).toBe(true);
+    expect(registry.getAvailableNames()).toEqual(['Nand']);
+  });
+
+  it('reset() leaves the built-in Nand definition intact', () => {
+    const registry = new ChipRegistry();
+    registry.reset();
+    const nand = registry.get('Nand');
+    expect(nand.builtin).toBe(true);
+    expect(nand.evaluate({ a: 1, b: 1 })).toEqual({ out: 0 });
+  });
 });

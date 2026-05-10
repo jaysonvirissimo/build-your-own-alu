@@ -24,6 +24,11 @@ export class ChipRegistry {
     this._chips.set(name, chipDef);
   }
 
+  reset() {
+    this._chips.clear();
+    this._chips.set('Nand', NAND);
+  }
+
   getAvailableNames() {
     return [...this._chips.keys()];
   }

@@ -22,6 +22,18 @@ export function clearProgress() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+export function clearProgressFrom(exerciseId, exercises) {
+  const idx = exercises.findIndex((e) => e.id === exerciseId);
+  const progress = loadProgress();
+  if (idx < 0) return progress;
+  for (let i = idx; i < exercises.length; i++) {
+    progress.delete(exercises[i].id);
+  }
+  const obj = Object.fromEntries(progress);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+  return progress;
+}
+
 export function getHighestUnlocked(exercises, progress) {
   for (let i = 0; i < exercises.length; i++) {
     const entry = progress.get(exercises[i].id);

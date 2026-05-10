@@ -8,7 +8,7 @@ import { createLiveDiagram } from './circuit-diagram.js';
 import { renderErrorPanel } from './error-panel.js';
 import { burstConfetti } from './confetti.js';
 
-export function createExerciseSection(exercise, index, registry, onSolved, vimEnabled, nextExerciseName) {
+export function createExerciseSection(exercise, index, registry, onSolved, vimEnabled, nextExerciseName, onResetFrom) {
   const section = document.createElement('section');
   section.className = 'exercise';
   section.id = `exercise-${exercise.id}`;
@@ -249,18 +249,7 @@ export function createExerciseSection(exercise, index, registry, onSolved, vimEn
   });
 
   resetExBtn.addEventListener('click', () => {
-    editor.setCode(exercise.skeleton);
-    editor.clearErrorHighlight();
-    resultsArea.innerHTML = '';
-    successIndicator.style.display = 'none';
-    successIndicator.classList.remove('playing');
-    hintArea.innerHTML = '';
-    hintIndex = 0;
-    if (hasHints) {
-      hintBtn.disabled = false;
-      hintBtn.textContent = 'Hint';
-    }
-    saveExercise(exercise.id, '', false);
+    onResetFrom(exercise.id);
   });
 
   return { section, editor };

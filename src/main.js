@@ -2,7 +2,7 @@ import './style.css';
 import { ChipRegistry } from './hdl/chips.js';
 import { parseHDL } from './hdl/parser.js';
 import { EXERCISES } from './exercises/definitions.js';
-import { loadProgress, getHighestUnlocked, clearProgress } from './ui/progress.js';
+import { loadProgress, getHighestUnlocked, clearProgress, clearProgressFrom } from './ui/progress.js';
 import { createExerciseSection } from './ui/exercise.js';
 import { createTutorialSection } from './ui/tutorial.js';
 import { scrollToElementSlowly } from './ui/slow-scroll.js';
@@ -93,18 +93,22 @@ app.appendChild(boolRef);
 const main = document.createElement('main');
 app.appendChild(main);
 
-// Replay saved solutions to rebuild the registry
-for (const exercise of EXERCISES) {
-  const entry = progress.get(exercise.id);
-  if (!entry || !entry.solved) break;
-  try {
-    const chipDef = parseHDL(entry.code);
-    registry.register(exercise.name, chipDef);
-  } catch {
-    // Corrupted save — stop replaying
-    break;
+function replayRegistry(currentProgress) {
+  registry.reset();
+  for (const exercise of EXERCISES) {
+    const entry = currentProgress.get(exercise.id);
+    if (!entry || !entry.solved) break;
+    try {
+      const chipDef = parseHDL(entry.code);
+      registry.register(exercise.name, chipDef);
+    } catch {
+      // Corrupted save — stop replaying
+      break;
+    }
   }
 }
+
+replayRegistry(progress);
 
 // Render exercises up to the highest unlocked
 const highestUnlocked = getHighestUnlocked(EXERCISES, progress);
@@ -116,7 +120,8 @@ for (let i = 0; i <= highestUnlocked; i++) {
 
 function appendExercise(index) {
   const exercise = EXERCISES[index];
-  const entry = progress.get(exercise.id);
+  const currentProgress = loadProgress();
+  const entry = currentProgress.get(exercise.id);
 
   const builder = exercise.tutorial ? createTutorialSection : createExerciseSection;
   const nextExerciseName = EXERCISES[index + 1]?.name ?? null;
@@ -126,7 +131,8 @@ function appendExercise(index) {
     registry,
     handleSolved,
     vimEnabled,
-    nextExerciseName
+    nextExerciseName,
+    handleResetFrom
   );
 
   // Restore saved code
@@ -144,6 +150,39 @@ function appendExercise(index) {
 
   main.appendChild(section);
   exerciseSections[index] = { section, editor };
+}
+
+function handleResetFrom(exerciseId) {
+  const idx = EXERCISES.findIndex((e) => e.id === exerciseId);
+  if (idx < 0) return;
+
+  const currentProgress = loadProgress();
+  let downstreamSolved = 0;
+  for (let i = idx + 1; i < EXERCISES.length; i++) {
+    if (currentProgress.get(EXERCISES[i].id)?.solved) downstreamSolved++;
+  }
+  if (downstreamSolved > 0) {
+    const ok = confirm(
+      `Reset this exercise and the ${downstreamSolved} solved chip${downstreamSolved === 1 ? '' : 's'} that come${downstreamSolved === 1 ? 's' : ''} after it?`
+    );
+    if (!ok) return;
+  }
+
+  const newProgress = clearProgressFrom(exerciseId, EXERCISES);
+  replayRegistry(newProgress);
+
+  const removeSlot = (i) => {
+    const slot = exerciseSections[i];
+    if (!slot) return;
+    const prev = slot.section.previousElementSibling;
+    if (prev && prev.classList.contains('hdl-guide')) prev.remove();
+    slot.section.remove();
+    exerciseSections[i] = undefined;
+  };
+
+  for (let i = EXERCISES.length - 1; i > idx; i--) removeSlot(i);
+  removeSlot(idx);
+  appendExercise(idx);
 }
 
 function handleSolved(exerciseId) {
