@@ -90,6 +90,95 @@ describe('renderErrorPanel', () => {
     expect(suggestion.textContent).toMatch(/semicolon/i);
   });
 
+  it('suggests an `=` between sub-pin and wire', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 3, col 12: Expected '=' between sub-pin and wire, got an identifier 'in'", { line: 3, col: 12 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/pinName=wireName/);
+  });
+
+  it('suggests opening paren after chip name', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 4, col 8: Expected '(' after chip name 'Nand', got an identifier 'a'", { line: 4, col: 8 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/Nand\(a=x, b=y, out=z\)/);
+  });
+
+  it('suggests a sub-pin name on the left of `=`', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 5, col 10: Expected an identifier as sub-pin name, got '='", { line: 5, col: 10 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/sub-pin name on the left of `=`/);
+  });
+
+  it('suggests a wire name on the right of `=`', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 5, col 14: Expected an identifier as wire name, got ','", { line: 5, col: 14 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/wire name/);
+  });
+
+  it('suggests bracket syntax for bus slots', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 6, col 4: Expected ']' after bus index, got ','", { line: 6, col: 4 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/a\[3\]/);
+    expect(s.textContent).toMatch(/a\[0\.\.7\]/);
+  });
+
+  it('suggests double-dot for bus ranges', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 7, col 6: Unexpected character '.'. Did you mean '..'?", { line: 7, col: 6 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/two dots/);
+  });
+
+  it('suggests closing a block comment', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 1, col 1: Unterminated block comment", { line: 1, col: 1 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/\*\//);
+  });
+
+  it('suggests starting the file with `CHIP`', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 1, col 1: Expected 'CHIP' , got 'chip'", { line: 1, col: 1 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/CHIP/);
+  });
+
+  it('suggests the IN/OUT/PARTS order', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 2, col 3: Expected 'IN' , got 'OUT'", { line: 2, col: 3 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/IN.*OUT.*PARTS/);
+  });
+
+  it('suggests adding closing `}` when input ends mid-chip', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 1, col 31: Expected an identifier as chip name, got end of input ''", { line: 1, col: 31 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/closing `}`/);
+  });
+
+  it('suggests removing stray text after the closing `}`', () => {
+    const container = new FakeElement('div');
+    const err = new ParseError("Line 9, col 1: Unexpected content after chip definition: 'extra'", { line: 9, col: 1 });
+    renderErrorPanel(container, err, null);
+    const s = container.querySelector('.error-panel__suggestion');
+    expect(s.textContent).toMatch(/closing/);
+  });
+
   it('categorizes SimError chip-missing as "Chip error"', () => {
     const container = new FakeElement('div');
     const err = new SimError("Chip 'Or' is not available. Available chips: Nand", {

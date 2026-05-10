@@ -231,10 +231,10 @@ function parse(tokens) {
   }
 
   function parseConnection() {
-    const subPin = expect(TOKEN_TYPES.IDENT, 'in connection').value;
+    const subPin = expect(TOKEN_TYPES.IDENT, 'as sub-pin name').value;
     const subBus = parseBusNotation();
-    expect(TOKEN_TYPES.EQUALS, 'in connection');
-    const wire = expect(TOKEN_TYPES.IDENT, 'in connection').value;
+    expect(TOKEN_TYPES.EQUALS, 'between sub-pin and wire');
+    const wire = expect(TOKEN_TYPES.IDENT, 'as wire name').value;
     const isConstant = wire === 'true' || wire === 'false';
     const wireBus = isConstant ? null : parseBusNotation();
     return { subPin, subBus, wire, wireBus, isConstant };

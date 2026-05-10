@@ -268,4 +268,32 @@ describe('parseHDL', () => {
       expect(err.line).toBe(4);
     }
   });
+
+  // Beginner-error wording guards. These pin parser wording so the matchers in
+  // src/ui/error-panel.js suggestionFor() keep firing. If you reword a parser
+  // error, update the corresponding suggestionFor() pattern too.
+
+  it('throws on missing `=` with sub-pin/wire wording', () => {
+    expect(() =>
+      parseHDL('CHIP Foo { IN a; OUT out; PARTS: Nand(a in, b=in, out=out); }')
+    ).toThrow(/Expected '=' between sub-pin and wire/);
+  });
+
+  it('throws on missing `(` after chip name', () => {
+    expect(() =>
+      parseHDL('CHIP Foo { IN a; OUT out; PARTS: Nand a=a, b=a, out=out); }')
+    ).toThrow(/Expected '\(' after chip name 'Nand'/);
+  });
+
+  it('throws on missing identifier with sub-pin name wording', () => {
+    expect(() =>
+      parseHDL('CHIP Foo { IN a; OUT out; PARTS: Nand(=a, b=a, out=out); }')
+    ).toThrow(/Expected an identifier as sub-pin name/);
+  });
+
+  it('throws on missing identifier with wire name wording', () => {
+    expect(() =>
+      parseHDL('CHIP Foo { IN a; OUT out; PARTS: Nand(a=, b=a, out=out); }')
+    ).toThrow(/Expected an identifier as wire name/);
+  });
 });

@@ -48,6 +48,39 @@ function suggestionFor(err) {
     if (/Expected '\)'/.test(err.message)) {
       return 'Every `(` needs a matching `)`. Check that each sub-chip call is closed.';
     }
+    if (/Expected '\(' after chip name/.test(err.message)) {
+      return 'Chip calls look like `Nand(a=x, b=y, out=z)`. Did you forget the opening `(` after the chip name?';
+    }
+    if (/Expected '=' between sub-pin and wire/.test(err.message)) {
+      return 'Each connection looks like `pinName=wireName`. Did you forget the `=`?';
+    }
+    if (/Expected an identifier as sub-pin name/.test(err.message)) {
+      return 'Each connection needs a sub-pin name on the left of `=`, like `a=in`. Check the start of this connection.';
+    }
+    if (/Expected an identifier as wire name/.test(err.message)) {
+      return 'After `=`, write a wire name (or `true`/`false`). Each connection looks like `pinName=wireName`.';
+    }
+    if (/Expected '\['/.test(err.message) || /Expected '\]'/.test(err.message)) {
+      return 'Bus slots use square brackets: `a[3]` for one bit, `a[0..7]` for a range.';
+    }
+    if (/Did you mean '\.\.'/.test(err.message)) {
+      return 'Bus ranges use two dots: `a[0..7]` selects bits 0 through 7.';
+    }
+    if (/Unterminated block comment/.test(err.message)) {
+      return 'Block comments need a closing `*/`. Find the `/*` and add `*/` where the comment should end.';
+    }
+    if (/Expected 'CHIP'/.test(err.message)) {
+      return 'Every file starts with `CHIP <name> { … }`. Begin with the keyword `CHIP` (in capitals).';
+    }
+    if (/Expected 'IN'/.test(err.message) || /Expected 'OUT'/.test(err.message) || /Expected 'PARTS'/.test(err.message)) {
+      return 'Inside a chip, declare `IN <pins>;`, then `OUT <pins>;`, then `PARTS:`. Check the order and capitalization.';
+    }
+    if (/Unexpected content after chip definition/.test(err.message)) {
+      return 'Everything must live inside the `{ … }` of one chip. Delete the stray text after the closing `}`.';
+    }
+    if (/Expected an identifier as chip name, got end of input/.test(err.message)) {
+      return 'The parser ran out of input mid-chip. Each part starts with a chip name and ends with `;`. If you\'ve finished, add the closing `}` for the chip.';
+    }
     if (/Unexpected character/.test(err.message)) {
       return 'The parser hit a character it didn\'t expect. Check for typos, unmatched brackets, or stray punctuation.';
     }
