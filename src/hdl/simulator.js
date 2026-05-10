@@ -1,5 +1,20 @@
 import { SimError } from './errors.js';
 
+/** @typedef {import('./types.js').ChipDef} ChipDef */
+/** @typedef {import('./types.js').Connection} Connection */
+/** @typedef {import('./types.js').Pin} Pin */
+/** @typedef {import('./types.js').SimInputs} SimInputs */
+/** @typedef {import('./types.js').SimOutputs} SimOutputs */
+/** @typedef {import('./chips.js').ChipRegistry} ChipRegistry */
+
+/**
+ * Evaluate a chip against a single set of input values.
+ * @param {ChipDef} chipDef
+ * @param {SimInputs} inputs
+ * @param {ChipRegistry} registry
+ * @returns {SimOutputs}
+ * @throws {SimError}
+ */
 export function simulate(chipDef, inputs, registry) {
   // Built-in chips have an evaluate function
   if (chipDef.builtin) {
@@ -253,6 +268,15 @@ export function simulate(chipDef, inputs, registry) {
   return result;
 }
 
+/**
+ * Read a connection's wire-side value, returning `undefined` when any of the
+ * requested bits are not yet ready.
+ * @param {Connection} conn
+ * @param {Map<string, number>} wires
+ * @param {Map<string, Set<number>>} wireReadyBits
+ * @param {Pin} subPin
+ * @returns {number | undefined}
+ */
 function readWireValue(conn, wires, wireReadyBits, subPin) {
   // Constants are always ready
   if (conn.isConstant) {
@@ -293,6 +317,12 @@ function readWireValue(conn, wires, wireReadyBits, subPin) {
   return (fullValue >> start) & ((1 << width) - 1);
 }
 
+/**
+ * Wire-side bit indices written by a connection whose sub-pin is an output.
+ * @param {Connection} conn
+ * @param {Pin} subOutPin
+ * @returns {number[]}
+ */
 function getTargetBits(conn, subOutPin) {
   if (conn.isConstant) return [];
 
@@ -316,8 +346,13 @@ function getTargetBits(conn, subOutPin) {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
 
-// Mirror of getTargetBits for read connections. Returns the wire-side bit
-// indices that this connection sources from `conn.wire`.
+/**
+ * Mirror of getTargetBits for read connections. Returns the wire-side bit
+ * indices that this connection sources from `conn.wire`.
+ * @param {Connection} conn
+ * @param {Pin} subPin
+ * @returns {number[]}
+ */
 function getReadBits(conn, subPin) {
   if (conn.wireBus === null) {
     let width;

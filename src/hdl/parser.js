@@ -1,5 +1,7 @@
 import { ParseError } from './errors.js';
 
+/** @typedef {import('./types.js').ChipDef} ChipDef */
+
 const TOKEN_TYPES = {
   IDENT: 'IDENT',
   NUMBER: 'NUMBER',
@@ -289,6 +291,12 @@ function parse(tokens) {
   return chip;
 }
 
+/**
+ * Parse HDL source text into a chip AST.
+ * @param {string} source
+ * @returns {ChipDef}
+ * @throws {ParseError}
+ */
 export function parseHDL(source) {
   const tokens = tokenize(source);
   return parse(tokens);

@@ -6,6 +6,10 @@
 // "0" and "1" (strings) are reserved for constant low/high signals per Yosys
 // convention.
 
+/** @typedef {import('../hdl/types.js').ChipDef} ChipDef */
+/** @typedef {import('../hdl/types.js').Netlist} Netlist */
+/** @typedef {import('../hdl/chips.js').ChipRegistry} ChipRegistry */
+
 // Chips with more parts than this render as a single labeled black box
 // instead of expanding every internal gate. Matches the threshold used by the
 // previous hand-rolled layout (deleted circuit-layout.js). Above ~10 parts the
@@ -16,6 +20,7 @@ const COLLAPSE_THRESHOLD = 10;
 // Maps known HDL chip names to Yosys gate primitives. Cells of these types
 // render with conventional schematic symbols from netlistsvg's default skin.
 // Pin-name mapping converts our HDL pin names to the symbol's expected pids.
+/** @type {Record<string, { type: string, pinMap: Record<string, string> }>} */
 export const PRIMITIVE_MAP = {
   Nand: { type: '$_NAND_', pinMap: { a: 'A', b: 'B', out: 'Y' } },
   And:  { type: '$_AND_',  pinMap: { a: 'A', b: 'B', out: 'Y' } },
@@ -26,6 +31,11 @@ export const PRIMITIVE_MAP = {
   Mux:  { type: '$_MUX_',  pinMap: { a: 'A', b: 'B', sel: 'S', out: 'Y' } },
 };
 
+/**
+ * @param {ChipDef} chipDef
+ * @param {ChipRegistry} registry
+ * @returns {Netlist}
+ */
 export function chipDefToNetlist(chipDef, registry) {
   const wireWidths = inferWireWidths(chipDef, registry);
   const wireBits = assignBitIds(chipDef, wireWidths);
