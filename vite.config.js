@@ -39,5 +39,7 @@ export default defineConfig({
       },
     },
   },
-  test: {},
+  test: {
+    exclude: ['node_modules', 'tests/e2e/**'],
+  },
 });
